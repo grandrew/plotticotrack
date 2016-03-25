@@ -13,3 +13,21 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
     }
   );
 });
+
+
+// use like this: chrome "http://127.0.0.1:0/?abc=42&xyz=hello"
+chrome.windows.onCreated.addListener(function (window) {
+    chrome.tabs.query({}, function (tabs) {
+        var args = { abc: null, xyz: null }, argName, regExp, match;
+        for (argName in args) {
+            regExp = new RegExp(argName + "=([^\&]+)")
+            match = regExp.exec(tabs[0].url);
+            if (!match) return;
+            args[argName] = match[1];
+        }
+        console.log(JSON.stringify(args));
+        // TODO HERE: either load the supplied arguments (hash, user-id, etc.)
+        //          or read the data from storage and set it to the page
+        
+    });
+});

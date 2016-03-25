@@ -1,1 +1,19 @@
 /* CSS file placeholder. */
+body { 
+  font-size: 80%;
+  font-family: verdana; 
+  text-decoration: none;
+  color: #555753; 
+  margin: 0px; 
+  background: #ffffff;
+}
+
+input[type=submit], input[type=button] {
+	color:#205C90;
+	border: 0;
+	background:none repeat scroll 0 0 #DDDDDD;
+	padding:0.25em 0.5em;
+	font-size: 1em;
+	border-radius: 0.5em;
+	cursor: pointer;
+}

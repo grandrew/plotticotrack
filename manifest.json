@@ -3,7 +3,7 @@
   "name": "plotticotrack",
   "short_name": "plotticotrack",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "minimum_chrome_version": "38",
 
   "icons": {
@@ -11,15 +11,18 @@
     "128": "assets/icon_128.png"
   },
 
-  "app": {
-    "background": {
-      "scripts": ["background.js"]
-    }
+  "background": {
+    "scripts": ["background.js"]
   },
-  
+  "browser_action": {
+    "default_icon": "assets/icon_128.png",
+    "default_popup": "control.html",
+    "default_title": "PlotticoTrack chrome plugin"
+  },
  "permissions": [
      "tabs",
      "background",
+      "storage",
      "http://*/*"
   ],
   "content_scripts": [{

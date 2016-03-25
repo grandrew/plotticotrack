@@ -1,6 +1,23 @@
+// we are loading page after we have set everything up...
 if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack = {};
 }
+
+function get_vals(objects) {
+  var r = "";
+  for(var key in objects) {
+      r+=objects[key]+" ";
+  }
+  return r;
+}
+
+chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": ""},function(v){ 
+  PlotticoTrack.pt_trackedSite = v["url"];
+  PlotticoTrack.pt_Hash = v["hash"];
+  PlotticoTrack.pt_NumberIndex  = v["nindex"];
+  PlotticoTrack.pt_XPath = v["xpath"];
+  console.log("local data "+get_vals(PlotticoTrack));
+});
 
 PlotticoTrack.createXPathFromElement = function(elm) { 
     var allNodes = document.getElementsByTagName('*'); 
@@ -51,16 +68,42 @@ PlotticoTrack.parseUnits = function(str) {
     return parseFloat(str);
 };
 
+// TODO: multiple data send support
 PlotticoTrack.sendToPlot = function(data, hash) {
-    (new Image()).src="https://plotti.co/"+hash+"?d="+data+"&h="+Math.random();
+    var pushSrc = "https://plotti.co/"+hash+"?d="+data+"&h="+Math.random();
+    console.log("Sending to plot: "+pushSrc);
+    var img = new Image();
+    img.src=
+    img.onload = function (e) {
+        PlotticoTrack.bdataSent = true;
+        // TODO HERE: retry, clear interval here?
+        // but need to make sure we send data only once, so in case of good conn - its ok
+    };
 };
 
-// TODO HERE: set pt_XPath pt_NumberIndex pt_Hash
+PlotticoTrack.sendRequest = function(uri, data, cb) {
+    console.log("Sending request");
+    var req = new XMLHttpRequest();
+    req.open("GET", uri, true);
+    req.onreadystatechange = function() {
+        if (req.readyState == 4) {
+          if (req.status == 200) {
+            console.log("Received: "+req.responseText);
+            cb(req.responseText);
+          }
+        }
+      };
+    req.send();
+};
 
+// here we wait for the data to appear
 PlotticoTrack.trySendInt = setInterval(function(){ // retry sending until we 
   var pt = PlotticoTrack; // TBD correct call seq, e.g. this
+  if(pt.pt_trackedSite && location.href != pt.pt_trackedSite) {
+    clearInterval(trySendInt); // send only once
+    return;
+  }
   if(pt.pt_XPath && pt.pt_NumberIndex) {
-    
     var el = pt.lookupElementByXPath(window.pt_XPath);
     var inData = el.innerHTML;
     var dataList = pt.parseTrackableValues(inData);
@@ -68,6 +111,20 @@ PlotticoTrack.trySendInt = setInterval(function(){ // retry sending until we
     var normalizedData = pt.parseUnits(trackData);
     if(!nomralizedData) return;
     pt.sendToPlot(normalizedData, pt.pt_Hash);
-    clearInterval(trySendInt);
+    clearInterval(PlotticoTrack.trySendInt); // send only once
   }
-},1000);
+},100);
+
+setInterval(function(e){
+    if(PlotticoTrack.bdataSent) {
+        location.reload();
+    }
+}, 5000); // do not reload faster than 1minute
+
+// this won't be loaded before we actually set everything (hopefully)
+// TODO: remove
+chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
+  if (msg == "ready") {
+    console.log("background ready");
+  }
+});
