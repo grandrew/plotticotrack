@@ -16,7 +16,7 @@ chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": ""},function
   PlotticoTrack.pt_Hash = v["hash"];
   PlotticoTrack.pt_NumberIndex  = v["nindex"];
   PlotticoTrack.pt_XPath = v["xpath"];
-  console.log("local data "+get_vals(PlotticoTrack));
+  //console.log("local data "+get_vals(PlotticoTrack));
 });
 
 PlotticoTrack.createXPathFromElement = function(elm) { 
@@ -113,7 +113,7 @@ PlotticoTrack.trySendInt = setInterval(function(){ // retry sending until we
     pt.sendToPlot(normalizedData, pt.pt_Hash);
     clearInterval(PlotticoTrack.trySendInt); // send only once
   }
-},100);
+},1000);
 
 setInterval(function(e){
     if(PlotticoTrack.bdataSent) {
