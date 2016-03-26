@@ -1,6 +1,7 @@
 // we are loading page after we have set everything up...
 if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack = {};
+    PlotticoTrack.pt_retry = 0;
 }
 
 function get_vals(objects) {
@@ -71,9 +72,10 @@ PlotticoTrack.documentQuerySelector = function (sel) {
 
 PlotticoTrack.createSelector = PlotticoTrack.fullPath;
 PlotticoTrack.querySelector = PlotticoTrack.documentQuerySelector;
-
+// PlotticoTrack.nrReg = /[-+]?[0-9]*\.?[0-9]+/g;
+PlotticoTrack.nrReg = /[-+]?[0-9]*[\.,]?[0-9]+/g;
 PlotticoTrack.parseTrackableValues = function(string) { 
-    var reg = /[-+]?[0-9]*\.?[0-9]+?/g;
+    var reg = PlotticoTrack.nrReg;
     var matches = [], found;
     while (found = reg.exec(string)) {
         matches.push(found[0]);
@@ -82,7 +84,7 @@ PlotticoTrack.parseTrackableValues = function(string) {
 };
 
 PlotticoTrack.parseTrackableIndex = function(string) { 
-    var reg = /[-+]?[0-9]*\.?[0-9]+?/g;
+    var reg = PlotticoTrack.nrReg;
     var indexes = [], found;
     while (found = reg.exec(string)) {
         indexes.push(found.index);
@@ -91,6 +93,7 @@ PlotticoTrack.parseTrackableIndex = function(string) {
 };
 
 PlotticoTrack.parseUnits = function(str) {
+    str = str.replace(",", ".");
     // TODO: wolfram|alpha units simplifier / parser? [and cache alpha results w/convert ratio?]
     // cheaper and simpler: x=UnitConvert[Quantity[0.2,"GBit/s"]];x/Quantity[1,QuantityUnit[x]]
     return parseFloat(str);
@@ -127,6 +130,7 @@ PlotticoTrack.sendRequest = function(uri, data, cb) {
 
 PlotticoTrack.getTrackedValue = function () {
     var el = PlotticoTrack.querySelector(PlotticoTrack.pt_XPath);
+    if(!el) return false;
     var inData = el.innerHTML;
     var dataList = PlotticoTrack.parseTrackableValues(inData);
     var trackData = dataList[PlotticoTrack.pt_NumberIndex];
@@ -250,19 +254,33 @@ PlotticoTrack.checkSend = function () {
   if(pt.pt_XPath && typeof(pt.pt_NumberIndex) != "undefined") {
     normalizedData = PlotticoTrack.getTrackedValue();
     if(!normalizedData) {
-      console.log("can not get normalizedData; will retry");
-      // TODO: try to do login here/replay script in case we have several failures
-      PlotticoTrack.processLoginForm();
-      setTimeout(PlotticoTrack.checkSend, pt.pt_waitInterval);
-      return;
+      if(PlotticoTrack.bdataSent) {
+        console.log("Can no longer find the tracked element; reload!");
+        location.reload();
+      } else {
+        console.log("can not get normalizedData; will retry");
+        PlotticoTrack.pt_retry++;
+        // TODO: try to do login here/replay script in case we have several failures
+        //PlotticoTrack.processLoginForm();
+        if(PlotticoTrack.pt_retry > 100) {
+          console.log("Failed to wait for the data for 100 retries. Giving up.");
+          return;
+        }
+        setTimeout(PlotticoTrack.checkSend, pt.pt_waitInterval);
+        return;
+      }
     }
     if(pt.pt_oldData == normalizedData && PlotticoTrack.bdataSent) {
       // need refresh
       console.log("Will do a full page refresh");
       location.reload();
     } else {
+      console.log("Old: "+pt.pt_oldData+" New: "+normalizedData);
       pt.pt_oldData = normalizedData;
       pt.sendToPlot(normalizedData, pt.pt_Hash);
+      PlotticoTrack.bdataSent = true; // TODO: we set this to always be true; switch to XHR!
+      // the problem is that plottico will not return a value if there are no viewers
+      // thus the image will never be loaded, and bdataSent not true
       setTimeout(PlotticoTrack.checkSend, pt.pt_checkInterval);
       console.log("Will do next check in "+pt.pt_checkInterval+"ms");
     }
@@ -279,13 +297,13 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
   }
 });
 
-chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": ""},function(v){ 
+chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": "", "interval": 5000},function(v){ 
   PlotticoTrack.pt_trackedSite = v["url"];
   PlotticoTrack.pt_Hash = v["hash"];
   PlotticoTrack.pt_NumberIndex  = v["nindex"];
   PlotticoTrack.pt_XPath = v["xpath"];
   PlotticoTrack.pt_oldData = false;
-  PlotticoTrack.pt_checkInterval = 5000; // tracking interval
+  PlotticoTrack.pt_checkInterval = v["interval"]; // tracking interval
   PlotticoTrack.pt_waitInterval = 500; // intervals to check for value while waiting
   //console.log("local data "+get_vals(PlotticoTrack));
   if(PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
@@ -324,8 +342,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         console.log("Meaasge!"+request.action);
     if (request.action == "select") {
         console.log("Meaasge action");
-        var sheet = window.document.styleSheets[0]
-        var ruleNum = sheet.cssRules.length;
+        var sheet = window.document.styleSheets[0];
+        if(sheet.cssRules) var ruleNum = sheet.cssRules.length;
+        else var ruleNum = 0;
         sheet.insertRule('*:hover { border: 1px solid blue; }', ruleNum);
         var old_mov=document.onmouseover;
         var old_moo=document.onmouseout;

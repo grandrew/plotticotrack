@@ -5,7 +5,8 @@ window.onload = function(){
         "url": document.getElementById("url").value,
         "hash": document.getElementById("hash").value,
         "nindex": parseInt(document.getElementById("nindex").value),
-        "xpath": document.getElementById("xpath").value
+        "xpath": document.getElementById("xpath").value,
+        "interval": document.getElementById("checkInt").value
       };
       chrome.storage.sync.set(trackedInfo, function() {
         // Notify that we saved.
@@ -14,11 +15,12 @@ window.onload = function(){
       console.log("going to set values");
       return false;
     };
-    chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": ""},function(v){ 
+    chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": "", "interval": 5000},function(v){ 
       document.getElementById("url").value = v["url"];
       document.getElementById("hash").value = v["hash"];
       document.getElementById("nindex").value  = v["nindex"];
       document.getElementById("xpath").value = v["xpath"];
+      document.getElementById("checkInt").value = v["interval"];
     });
     document.querySelector('input#selectElement').onclick=function() {
       	chrome.tabs.getSelected(null, function(tab) {
@@ -29,6 +31,7 @@ window.onload = function(){
       	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
             chrome.tabs.sendMessage(tabs[0].id, {action: "select"}, function(response) {});  
         });
+        window.close();
     }
     
 };
