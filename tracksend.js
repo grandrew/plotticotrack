@@ -11,13 +11,8 @@ function get_vals(objects) {
   return r;
 }
 
-chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": ""},function(v){ 
-  PlotticoTrack.pt_trackedSite = v["url"];
-  PlotticoTrack.pt_Hash = v["hash"];
-  PlotticoTrack.pt_NumberIndex  = v["nindex"];
-  PlotticoTrack.pt_XPath = v["xpath"];
-  //console.log("local data "+get_vals(PlotticoTrack));
-});
+
+
 
 PlotticoTrack.createXPathFromElement = function(elm) { 
     var allNodes = document.getElementsByTagName('*'); 
@@ -52,8 +47,7 @@ PlotticoTrack.lookupElementByXPath = function(path) {
     return  result.singleNodeValue; 
 };
 
-PlotticoTrack.parseTrackableValues = function(str) { 
-    var string =lookupElementByXPath('id("uiContentBody")/fieldset[1]/table[@class="str_table"]/tbody[1]/tr[1]/td[2]').innerHTML;
+PlotticoTrack.parseTrackableValues = function(string) { 
     var reg = /[-+]?[0-9]*\.?[0-9]+?/g;
     var matches = [], found;
     while (found = reg.exec(string)) {
@@ -73,9 +67,10 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     var pushSrc = "https://plotti.co/"+hash+"?d="+data+"&h="+Math.random();
     console.log("Sending to plot: "+pushSrc);
     var img = new Image();
-    img.src=
+    img.src = pushSrc;
     img.onload = function (e) {
         PlotticoTrack.bdataSent = true;
+        console.log("data successfully sent!");
         // TODO HERE: retry, clear interval here?
         // but need to make sure we send data only once, so in case of good conn - its ok
     };
@@ -96,30 +91,36 @@ PlotticoTrack.sendRequest = function(uri, data, cb) {
     req.send();
 };
 
-// here we wait for the data to appear
-PlotticoTrack.trySendInt = setInterval(function(){ // retry sending until we 
-  var pt = PlotticoTrack; // TBD correct call seq, e.g. this
-  if(pt.pt_trackedSite && location.href != pt.pt_trackedSite) {
-    clearInterval(trySendInt); // send only once
-    return;
-  }
-  if(pt.pt_XPath && pt.pt_NumberIndex) {
-    var el = pt.lookupElementByXPath(window.pt_XPath);
+PlotticoTrack.getTrackedValue = function () {
+    var el = PlotticoTrack.lookupElementByXPath(PlotticoTrack.pt_XPath);
     var inData = el.innerHTML;
-    var dataList = pt.parseTrackableValues(inData);
-    var trackData = dataList[pt.pt_NumberIndex];
-    var normalizedData = pt.parseUnits(trackData);
-    if(!nomralizedData) return;
-    pt.sendToPlot(normalizedData, pt.pt_Hash);
-    clearInterval(PlotticoTrack.trySendInt); // send only once
-  }
-},1000);
+    var dataList = PlotticoTrack.parseTrackableValues(inData);
+    var trackData = dataList[PlotticoTrack.pt_NumberIndex];
+    var normalizedData = PlotticoTrack.parseUnits(trackData);
+    return normalizedData;
+};
 
-setInterval(function(e){
-    if(PlotticoTrack.bdataSent) {
-        location.reload();
+PlotticoTrack.checkSend = function () {
+  var pt = PlotticoTrack;
+  if(pt.pt_XPath && pt.pt_NumberIndex) {
+    normalizedData = PlotticoTrack.getTrackedValue();
+    if(!normalizedData) {
+      console.log("can not get normalizedData; will retry");
+      // TODO: try to do login here/replay script in case we have several failures
+      setTimeout(PlotticoTrack.checkSend, pt.pt_waitInterval);
+      return;
     }
-}, 5000); // do not reload faster than 1minute
+    if(pt.pt_oldData == normalizedData && PlotticoTrack.bdataSent) {
+      // need refresh
+      location.reload();
+    } else {
+      pt.pt_oldData = normalizedData;
+      pt.sendToPlot(normalizedData, pt.pt_Hash);
+      setTimeout(PlotticoTrack.checkSend, pt.pt_checkInterval);
+    }
+  } 
+};
+
 
 // this won't be loaded before we actually set everything (hopefully)
 // TODO: remove
@@ -128,3 +129,21 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     console.log("background ready");
   }
 });
+
+chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": ""},function(v){ 
+  PlotticoTrack.pt_trackedSite = v["url"];
+  PlotticoTrack.pt_Hash = v["hash"];
+  PlotticoTrack.pt_NumberIndex  = v["nindex"];
+  PlotticoTrack.pt_XPath = v["xpath"];
+  PlotticoTrack.pt_oldData = false;
+  PlotticoTrack.pt_checkInterval = 5000; // tracking interval
+  PlotticoTrack.pt_waitInterval = 500; // intervals to check for value while waiting
+  //console.log("local data "+get_vals(PlotticoTrack));
+  if(PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
+    console.log("Site found! Launching");
+    setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+  } else {
+    console.log("Site not found! href="+location.href+" but we are tracking "+PlotticoTrack.pt_trackedSite);
+  }
+});
+
