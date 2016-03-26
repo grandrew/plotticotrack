@@ -20,4 +20,15 @@ window.onload = function(){
       document.getElementById("nindex").value  = v["nindex"];
       document.getElementById("xpath").value = v["xpath"];
     });
+    document.querySelector('input#selectElement').onclick=function() {
+      	chrome.tabs.getSelected(null, function(tab) {
+      	    console.log("sending message!");
+      	    chrome.runtime.sendMessage({action: "select", recorded_tab: tab.id, start_url: ""});
+      	    
+      	});
+      	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+            chrome.tabs.sendMessage(tabs[0].id, {action: "select"}, function(response) {});  
+        });
+    }
+    
 };
