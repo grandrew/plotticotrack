@@ -65,7 +65,7 @@ PlotticoTrack.fullPath = function(el){
     }
   }
   return names.join(" > ");
-}
+};
 
 PlotticoTrack.documentQuerySelector = function (sel) {
   return document.querySelector(sel);
@@ -307,6 +307,7 @@ chrome.storage.sync.get({"url":"", "hash":"", "nindex": -1, "xpath": "", "interv
   PlotticoTrack.pt_oldData = false;
   PlotticoTrack.pt_checkInterval = v["interval"]; // tracking interval
   PlotticoTrack.pt_waitInterval = 700; // intervals to check for value while waiting
+  PlotticoTrack.pt_playTries = 0;
   PlotticoTrack.pt_recIndex = 0;
   PlotticoTrack.pt_recording = v.recording;
   //console.log("local data "+get_vals(PlotticoTrack));
@@ -384,10 +385,16 @@ PlotticoTrack.playOne = function() {
   console.log("Trying to perform action "+rec.type+" on element "+rec.info.selector);
   var el = document.querySelector(rec.info.selector);
   // TODO HERE: if element is not found - try some more times waiting for it.
-  if(!el) console.log("  --- element not found!");
+  if(!el) {
+    console.log("  --- element not found! try "+PlotticoTrack.pt_playTries);
+    PlotticoTrack.pt_playTries++;
+    if(PlotticoTrack.pt_playTries < 5) return;
+    PlotticoTrack.pt_playTries = 0;
+  }
   if(el && rec.type == TestRecorder.EventTypes.Click) {
     console.log("Executing click!");
     el.dispatchEvent(new Event("click"));
+    PlotticoTrack.pt_playTries = 0;
   }
   PlotticoTrack.pt_recIndex++;
 };
@@ -403,8 +410,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         
         console.log("Meaasge action");
         var sheet = window.document.styleSheets[0];
-        if(sheet.cssRules) var ruleNum = sheet.cssRules.length;
-        else var ruleNum = 0;
+        var ruleNum = 0;
+        if(sheet.cssRules) ruleNum = sheet.cssRules.length;
         sheet.insertRule('*:hover { border: 1px solid blue; }', ruleNum);
         var old_mov=document.onmouseover;
         var old_moo=document.onmouseout;
@@ -463,6 +470,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
           PlotticoTrack.pt_recIndex = 0;
           PlotticoTrack.pt_recording = v.recording;
           PlotticoTrack.playRecording();
-        })
+        });
     }
 });
