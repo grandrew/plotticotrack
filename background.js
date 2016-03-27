@@ -19,7 +19,31 @@ var tab_id = null;
 //     }
 //   );
 // });
-
+EventTypes = {};
+EventTypes.OpenUrl = 0;
+EventTypes.Click = 1;
+EventTypes.Change = 2;
+EventTypes.Comment = 3;
+EventTypes.Submit = 4;
+EventTypes.CheckPageTitle = 5;
+EventTypes.CheckPageLocation = 6;
+EventTypes.CheckTextPresent = 7;
+EventTypes.CheckValue = 8;
+EventTypes.CheckValueContains = 9;
+EventTypes.CheckText = 10;
+EventTypes.CheckHref = 11;
+EventTypes.CheckEnabled = 12;
+EventTypes.CheckDisabled = 13;
+EventTypes.CheckSelectValue = 14;
+EventTypes.CheckSelectOptions = 15;
+EventTypes.CheckImageSrc = 16;
+EventTypes.PageLoad = 17;
+EventTypes.ScreenShot = 18;
+EventTypes.MouseDown = 19;
+EventTypes.MouseUp = 20;
+EventTypes.MouseDrag = 21;
+EventTypes.MouseDrop = 22;
+EventTypes.KeyPress = 23;
 
 // use like this: chrome "http://127.0.0.1:0/?abc=42&xyz=hello"
 chrome.windows.onCreated.addListener(function (window) {
@@ -41,7 +65,7 @@ chrome.windows.onCreated.addListener(function (window) {
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   console.log(request);
   if (request.action == "append") {
-    if(request.obj.type != TestRecorder.EventTypes.Click) return;
+    if(request.obj.type != EventTypes.Click) return;
     testcase_items[testcase_items.length] = request.obj;
     empty = false;
     sendResponse({});
