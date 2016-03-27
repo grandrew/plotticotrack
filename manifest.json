@@ -26,7 +26,7 @@
   ],
   "content_scripts": [{
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["tracksend.js"]
+        "js": ["recorder.js", "tracksend.js"]
   }],
   "offline_enabled": true,
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"

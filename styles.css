@@ -17,3 +17,13 @@ input[type=submit], input[type=button] {
 	border-radius: 0.5em;
 	cursor: pointer;
 }
+
+input[type=submit]:disabled {
+	color:#BBBBBB;
+	border: 0;
+	background:none repeat scroll 0 0 #CCCCCC;
+	padding:0.25em 0.5em;
+	font-size: 1em;
+	border-radius: 0.5em;
+	cursor: pointer;
+}

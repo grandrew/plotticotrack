@@ -52,7 +52,8 @@ PlotticoTrack.fullPath = function(el){
   var names = [];
   while (el.parentNode){
     if (el.id){
-      names.unshift('#'+el.id);
+      names.unshift('[id="'+el.id+'"]'); // TODO: 1. check ID uniq 2. shorten ID 
+      // check http://stackoverflow.com/a/31281201
       break;
     }else{
       if (el==el.ownerDocument.documentElement) names.unshift(el.tagName);
@@ -108,7 +109,7 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     img.onload = function (e) {
         PlotticoTrack.bdataSent = true;
         console.log("data successfully sent!");
-        // TODO HERE: retry, clear interval here?
+        // retry, clear interval here?
         // but need to make sure we send data only once, so in case of good conn - its ok
     };
 };
@@ -133,6 +134,7 @@ PlotticoTrack.getTrackedValue = function () {
     if(!el) return false;
     var inData = el.innerHTML;
     var dataList = PlotticoTrack.parseTrackableValues(inData);
+    if(dataList.length <= PlotticoTrack.pt_NumberIndex) return false;
     var trackData = dataList[PlotticoTrack.pt_NumberIndex];
     var normalizedData = PlotticoTrack.parseUnits(trackData);
     return normalizedData;
@@ -251,7 +253,7 @@ PlotticoTrack.processLoginForm = function () {
 
 PlotticoTrack.checkSend = function () {
   var pt = PlotticoTrack;
-  if(pt.pt_XPath && typeof(pt.pt_NumberIndex) != "undefined") {
+  if(pt.pt_XPath && typeof(pt.pt_NumberIndex) != -1) {
     normalizedData = PlotticoTrack.getTrackedValue();
     if(!normalizedData) {
       if(PlotticoTrack.bdataSent) {
@@ -260,9 +262,9 @@ PlotticoTrack.checkSend = function () {
       } else {
         console.log("can not get normalizedData; will retry");
         PlotticoTrack.pt_retry++;
-        // TODO: try to do login here/replay script in case we have several failures
-        //PlotticoTrack.processLoginForm();
-        if(PlotticoTrack.pt_retry > 100) {
+        PlotticoTrack.playOne();
+        
+        if(PlotticoTrack.pt_retry > 30) {
           console.log("Failed to wait for the data for 100 retries. Giving up.");
           return;
         }
@@ -297,18 +299,31 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
   }
 });
 
-chrome.storage.sync.get({"url":"", "hash":"", "nindex": 0, "xpath": "", "interval": 5000},function(v){ 
+chrome.storage.sync.get({"url":"", "hash":"", "nindex": -1, "xpath": "", "interval": 5000, "recording": null},function(v){ 
   PlotticoTrack.pt_trackedSite = v["url"];
   PlotticoTrack.pt_Hash = v["hash"];
   PlotticoTrack.pt_NumberIndex  = v["nindex"];
   PlotticoTrack.pt_XPath = v["xpath"];
   PlotticoTrack.pt_oldData = false;
   PlotticoTrack.pt_checkInterval = v["interval"]; // tracking interval
-  PlotticoTrack.pt_waitInterval = 500; // intervals to check for value while waiting
+  PlotticoTrack.pt_waitInterval = 700; // intervals to check for value while waiting
+  PlotticoTrack.pt_recIndex = 0;
+  PlotticoTrack.pt_recording = v.recording;
   //console.log("local data "+get_vals(PlotticoTrack));
   if(PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
     console.log("Site found! Launching");
-    setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+    if(!PlotticoTrack.pt_XPath) {
+      console.log("No xpath! Trying recording session");
+      if(PlotticoTrack.pt_recording) {
+        console.log("Recording exists! Not starting recorer");
+      } else {
+        console.log("starting recorer");
+        recorder.start();
+        PlotticoTrack.pt_recStarted = true;
+      }
+    } else {
+      setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+    }
   } else {
     console.log("Site not found! href="+location.href+" but we are tracking "+PlotticoTrack.pt_trackedSite);
   }
@@ -338,9 +353,54 @@ function getCaretCharacterOffsetWithin(element) {
     return caretOffset;
 }
 
+PlotticoTrack.playRecording = function() {
+  if(PlotticoTrack.pt_recIndex >= PlotticoTrack.pt_recording.length) {
+    console.log("Replay finished");
+    return;
+  }
+  PlotticoTrack.playOne();
+  setTimeout(PlotticoTrack.playRecording, 500);
+};
+
+PlotticoTrack.playOne = function() {
+  // skip all actions that we do not support
+  // var rec={type:-1};
+  // while(PlotticoTrack.pt_recIndex < PlotticoTrack.pt_recording.length && 
+  //     rec.type != TestRecorder.EventTypes.Click) {
+  //     rec = PlotticoTrack.pt_recording[PlotticoTrack.pt_recIndex];
+  //     PlotticoTrack.pt_recIndex++;
+  // }
+  var rec = PlotticoTrack.pt_recording[PlotticoTrack.pt_recIndex];
+  
+  if(PlotticoTrack.pt_recIndex >= PlotticoTrack.pt_recording.length) {
+    console.log("No more actions recorded");
+    return;
+  }
+  
+  if(!rec) {
+    console.log("nothing to play at index "+PlotticoTrack.pt_recIndex);
+    return;
+  }
+  console.log("Trying to perform action "+rec.type+" on element "+rec.info.selector);
+  var el = document.querySelector(rec.info.selector);
+  // TODO HERE: if element is not found - try some more times waiting for it.
+  if(!el) console.log("  --- element not found!");
+  if(el && rec.type == TestRecorder.EventTypes.Click) {
+    console.log("Executing click!");
+    el.dispatchEvent(new Event("click"));
+  }
+  PlotticoTrack.pt_recIndex++;
+};
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         console.log("Meaasge!"+request.action);
     if (request.action == "select") {
+        if(PlotticoTrack.pt_recStarted) {
+          PlotticoTrack.pt_recStarted = false;
+          recorder.stop();
+        }
+        chrome.runtime.sendMessage({action: "saveRecording"}); // hope it will complete before we stop and exit...
+        
         console.log("Meaasge action");
         var sheet = window.document.styleSheets[0];
         if(sheet.cssRules) var ruleNum = sheet.cssRules.length;
@@ -387,5 +447,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
           return false;
         };
         sendResponse({});
+    }
+    if (request.action == "play") {
+        if(PlotticoTrack.pt_recStarted) {
+          recorder.stop();
+          PlotticoTrack.pt_recStarted = false;
+        }
+        console.log("Loading recording for play");
+        chrome.storage.sync.get({"recording": null},function(v){ 
+          if(!v.recording) {
+            console.log("No recrording recorded.");
+            return;
+          }
+          console.log("Starting playback");
+          PlotticoTrack.pt_recIndex = 0;
+          PlotticoTrack.pt_recording = v.recording;
+          PlotticoTrack.playRecording();
+        })
     }
 });
