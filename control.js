@@ -90,7 +90,8 @@ window.onload = function(){
                     { type: 'break' },
                     { type: 'button', id: 'gourl', caption: 'Visit site url and start', img: 'icon-search', disabled: true},
                     { type: 'break' },
-                    { type: 'button', id: 'goplot', caption: 'View plot', img: 'icon-page', disabled: true}
+                    { type: 'button', id: 'goplot', caption: 'View plot', img: 'icon-page', disabled: true},
+                    { type: 'html', html: '<div style="width: 240px;text-align: right;"><a href="https://plotti.co" target="_blank">plotti.co</a> site tracker</div>'},
                 ],
                 onClick: function (target, data) {
                     if(target == "gourl") {
