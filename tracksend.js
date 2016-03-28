@@ -347,44 +347,88 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     }
 });
 
+// chrome.storage.sync.get({
+//     "url": "",
+//     "hash": "",
+//     "nindex": -1,
+//     "xpath": "",
+//     "interval": 5000,
+//     "recording": null
+// }, function(v) {
+//     PlotticoTrack.pt_trackedSite = v["url"];
+//     PlotticoTrack.pt_Hash = v["hash"];
+//     PlotticoTrack.pt_NumberIndex = v["nindex"];
+//     PlotticoTrack.pt_XPath = v["xpath"];
+//     PlotticoTrack.pt_oldData = false;
+//     PlotticoTrack.pt_checkInterval = v["interval"]; // tracking interval
+//     PlotticoTrack.pt_waitInterval = 700; // intervals to check for value while waiting
+//     PlotticoTrack.pt_recIndex = 0;
+//     PlotticoTrack.pt_recording = v.recording;
+//     //console.log("local data "+get_vals(PlotticoTrack));
+//     if (PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
+//         console.log("Site found! Launching");
+//         PlotticoTrack.insertPanel();
+//         if (!PlotticoTrack.pt_XPath) {
+//             console.log("No xpath! Trying recording session");
+//             if (PlotticoTrack.pt_recording) {
+//                 console.log("Recording exists! Not starting recorer");
+//             }
+//             else {
+//                 console.log("starting recorer");
+//                 recorder.start();
+//                 PlotticoTrack.pt_recStarted = true;
+//             }
+//         }
+//         else {
+//             PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+//         }
+//     }
+//     else {
+//         console.log("Site not found! href=" + location.href + " but we are tracking " + PlotticoTrack.pt_trackedSite);
+//     }
+// });
+
 chrome.storage.sync.get({
-    "url": "",
-    "hash": "",
-    "nindex": -1,
-    "xpath": "",
-    "interval": 5000,
-    "recording": null
-}, function(v) {
-    PlotticoTrack.pt_trackedSite = v["url"];
-    PlotticoTrack.pt_Hash = v["hash"];
-    PlotticoTrack.pt_NumberIndex = v["nindex"];
-    PlotticoTrack.pt_XPath = v["xpath"];
-    PlotticoTrack.pt_oldData = false;
-    PlotticoTrack.pt_checkInterval = v["interval"]; // tracking interval
-    PlotticoTrack.pt_waitInterval = 700; // intervals to check for value while waiting
-    PlotticoTrack.pt_recIndex = 0;
-    PlotticoTrack.pt_recording = v.recording;
-    //console.log("local data "+get_vals(PlotticoTrack));
-    if (PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
-        console.log("Site found! Launching");
-        PlotticoTrack.insertPanel();
-        if (!PlotticoTrack.pt_XPath) {
-            console.log("No xpath! Trying recording session");
-            if (PlotticoTrack.pt_recording) {
-                console.log("Recording exists! Not starting recorer");
+    "tracklist": []
+}, function(l) {
+    var i;
+    for(i=0;i<l.tracklist.length;i++){
+        if(l.tracklist[i].url == location.href) {
+            var v = l.tracklist[i];
+            PlotticoTrack.pt_trackedSite = v["url"];
+            PlotticoTrack.pt_Hash = v["phash"];
+            PlotticoTrack.pt_NumberIndex = v["nrindex"];
+            PlotticoTrack.pt_XPath = v["selector"];
+            PlotticoTrack.pt_oldData = false;
+            PlotticoTrack.pt_checkInterval = v["timer"]; // tracking interval
+            PlotticoTrack.pt_dataCaption = v["caption"]; // TODO HERE
+            PlotticoTrack.pt_waitInterval = 700; // intervals to check for value while waiting
+            PlotticoTrack.pt_recIndex = 0;
+            PlotticoTrack.pt_recording = v.script;
+            //console.log("local data "+get_vals(PlotticoTrack));
+            if (PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
+                console.log("Site found! Launching");
+                PlotticoTrack.insertPanel();
+                if (!PlotticoTrack.pt_XPath) {
+                    console.log("No xpath! Trying recording session");
+                    if (PlotticoTrack.pt_recording) {
+                        console.log("Recording exists! Not starting recorer");
+                    }
+                    else {
+                        console.log("starting recorer");
+                        recorder.start();
+                        PlotticoTrack.pt_recStarted = true;
+                    }
+                }
+                else {
+                    PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+                }
             }
-            else {
-                console.log("starting recorer");
-                recorder.start();
-                PlotticoTrack.pt_recStarted = true;
-            }
-        }
-        else {
-            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+            break;
         }
     }
-    else {
-        console.log("Site not found! href=" + location.href + " but we are tracking " + PlotticoTrack.pt_trackedSite);
+    if(i == l.tracklist.length){
+        console.log("Site not found! href=" + location.href );
     }
 });
 
@@ -456,6 +500,24 @@ PlotticoTrack.playOne = function() {
     PlotticoTrack.pt_recIndex++;
 };
 
+PlotticoTrack.saveValues = function(trackedInfo) {
+    chrome.storage.sync.get({"tracklist": []}, function(l) {
+        var i;
+        for(i=0;i<l.tracklist.length;i++){
+            if(l.tracklist[i].url == location.href) {
+                var v = l.tracklist[i];
+                v.nindex = trackedInfo.nindex;
+                v.selector = trackedInfo.xpath;
+                chrome.storage.sync.set({ "tracklist": l.tracklist }, function() {
+                    // Notify that we saved.
+                    console.log("set values");
+                });
+                break;
+            }
+        }
+    });
+};
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log("Meaasge!" + request.action);
     if (request.action == "select") {
@@ -506,10 +568,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 "nindex": nrIndex,
                 "xpath": xpath
             };
-            chrome.storage.sync.set(trackedInfo, function() {
-                // Notify that we saved.
-                console.log("set values");
-            });
+            PlotticoTrack.saveValues(trackedInfo);
             document.onmouseover = old_mov;
             document.onmouseout = old_moo;
             document.onclick = old_cl;
