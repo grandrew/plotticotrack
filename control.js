@@ -1,5 +1,6 @@
-/*global chrome*/
+/*global chrome, MutationObserver, vulcanise_inlines, w2ui*/
 window.onload = function(){
+    
     //document.querySelector('input#startupd').onclick=function() {return false;};
     console.log("disabled");
     document.getElementById("selectElement").disabled = true;
@@ -81,21 +82,112 @@ window.onload = function(){
                 toolbarSearch   : false,
                 toolbarAdd      : true,
                 toolbarDelete   : true,
-                toolbarSave     : false
+                toolbarSave     : false,
+                toolbarEdit     : false
+            },
+            toolbar: {
+                items: [
+                    { type: 'break' },
+                    { type: 'button', id: 'gourl', caption: 'Visit site url and start', img: 'icon-search', disabled: true},
+                    { type: 'break' },
+                    { type: 'button', id: 'goplot', caption: 'View plot', img: 'icon-page', disabled: true}
+                ],
+                onClick: function (target, data) {
+                    if(target == "gourl") {
+                        var sel = w2ui.grid.getSelection();
+                        for(var i=0;i<sel.length;i++) {
+                            //console.log("will open" + w2ui.grid.get(sel[i]).url);
+                            var url = w2ui.grid.get(sel[i]).url;
+                            // var win = window.open(url, '_blank');
+                            chrome.tabs.create({
+                                url: url
+                            });
+                        }
+                        // win.focus();
+                    }
+                    if(target == "goplot") {
+                        var sel = w2ui.grid.getSelection();
+                        for(var i=0;i<sel.length;i++) {
+                            //console.log("will open" + w2ui.grid.get(sel[i]).url);
+                            var url = "https://plotti.co/"+w2ui.grid.get(sel[i]).phash;
+                            // var win = window.open(url, '_blank');
+                            chrome.tabs.create({
+                                url: url
+                            });
+                        }
+                        // win.focus();
+                    }
+                }
             },
             columns: [
-                { field: 'phash', caption: 'Plotti.co Hash', size: '30%' },
-                { field: 'url', caption: 'Track URL', size: '50%' },
-                { field: 'timer', caption: 'Timer', size: '10%' },
-                { field: 'caption', caption: 'Data caption', size: '120px' }
+                { field: 'rdy', caption: 'Enabled', size: '5%', render: 'toggle'},
+                { field: 'phash', caption: 'Plotti.co Hash', size: '15%', editable: { type : 'text', inTag : '', style   : '' }},
+                { field: 'url', caption: 'Track URL', size: '50%', editable: { type : 'text', inTag : '', style   : '' } },
+                { field: 'timer', caption: 'Timer (s)', size: '10%', editable: { type : 'int', inTag : '', style   : '' } },
+                { field: 'caption', caption: 'Data caption', size: '120px', editable: { type : 'text', inTag : '', style   : '' } },
+                { field: 'selector', caption: 'Selector', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' }},
+                { field: 'nrindex', caption: 'NRIndex', size: '10%', hidden: true, editable: { type : 'int', inTag : '', style   : '' } },
+                { field: 'script', caption: 'Script', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } }
             ],
             records: [
-                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' },
-                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' },
-                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' },
-                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' },
-                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' }
+                { recid: 1, rdy: true, phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]" },
+                { recid: 2, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
+                { recid: 3, rdy: false,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
+                { recid: 4, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
+                { recid: 5, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
+                { recid: 6, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
+                { recid: 7, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
             ]
         });
+    });
+    vulcanise_inlines();
+    // $(document).bind('domChanged', function(){
+    //     console.log("mutata");
+    //     vulcanise_inlines();
+    // });
+    
+    // select the target node
+    var target = document.body;
+     
+    // create an observer instance
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        //console.log(mutation.type);
+        vulcanise_inlines();
+      });    
+    });
+     
+    // configuration of the observer:
+    var config = { /*attributes: true,*/ childList: true, characterData: true, subtree: true };
+     
+    // pass in the target node, as well as the observer options
+    observer.observe(target, config);
+     
+    // later, you can stop observing
+    // observer.disconnect();
+    //var sel = grid.getSelection();
+    w2ui.grid.on('add', function(event) {
+        var nrid = w2ui.grid.records[w2ui.grid.records.length-1].recid+1;
+        w2ui['grid'].add({ recid: nrid, phash: makeid(), url: "", timer: 60*5, caption: '', selector: "", nrindex: -1, script: "" });
+        w2ui.grid.editField(nrid, 2);
+    });
+    
+    w2ui.grid.on('select', function(event) {
+        w2ui['grid'].toolbar.enable('gourl');
+        w2ui['grid'].toolbar.enable('goplot');
+    });
+    
+    w2ui.grid.on('unselect', function(event) {
+        w2ui['grid'].toolbar.disable('gourl');
+        w2ui['grid'].toolbar.disable('goplot');
+    });
+    w2ui.grid.on('change', function(event) {
+        console.log("change");
+        console.log(event);
+    });
+    w2ui.grid.on('delete', function(event) {
+        event.onComplete = function() {
+            // after deleted
+        };
     });
 };
