@@ -1,3 +1,4 @@
+/*global chrome*/
 window.onload = function(){
     //document.querySelector('input#startupd').onclick=function() {return false;};
     console.log("disabled");
@@ -48,13 +49,13 @@ window.onload = function(){
             chrome.tabs.sendMessage(tabs[0].id, {action: "select"}, function(response) {});  
         });
         window.close();
-    }
+    };
     document.querySelector('input#dropRecording').onclick=function() {
         chrome.storage.sync.set({"recording":null}, function() {
             // Notify that we saved.
             console.log("recording deleted");
         });
-    }
+    };
     document.querySelector('input#playRecording').onclick=function() {
   	    console.log("will play recording!");
   	    chrome.tabs.getSelected(null, function(tab) {
@@ -66,5 +67,35 @@ window.onload = function(){
             chrome.tabs.sendMessage(tabs[0].id, {action: "play"}, function(response) {});  
         });
         window.close();
-    }
+    };
+    
+    $(function () {
+        $('#grid').w2grid({
+            name: 'grid',
+            header: 'List of Tracks',
+            show: {
+                toolbar: true,
+                footer: true,
+                toolbarReload   : false,
+                toolbarColumns  : true,
+                toolbarSearch   : false,
+                toolbarAdd      : true,
+                toolbarDelete   : true,
+                toolbarSave     : false
+            },
+            columns: [
+                { field: 'phash', caption: 'Plotti.co Hash', size: '30%' },
+                { field: 'url', caption: 'Track URL', size: '50%' },
+                { field: 'timer', caption: 'Timer', size: '10%' },
+                { field: 'caption', caption: 'Data caption', size: '120px' }
+            ],
+            records: [
+                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' },
+                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' },
+                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' },
+                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' },
+                { recid: 1, phash: "asdfgre", url: "http://rbc.ru", timer: '5700s', caption: 'bps' }
+            ]
+        });
+    });
 };

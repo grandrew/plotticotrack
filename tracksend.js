@@ -1,4 +1,7 @@
+/*global chrome*/
+/*global recorder*/ // defined at recorder.js and included above
 // we are loading page after we have set everything up...
+var PlotticoTrack;
 if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack = {};
     PlotticoTrack.pt_retry = 0;
@@ -34,6 +37,7 @@ PlotticoTrack.createXPathFromElement = function(elm) {
             segs.unshift(elm.localName.toLowerCase() + '[@class="' + elm.getAttribute('class') + '"]');
         }
         else {
+            var i, sib;
             for (i = 1, sib = elm.previousSibling; sib; sib = sib.previousSibling) {
                 if (sib.localName == elm.localName) i++;
             }
@@ -144,16 +148,16 @@ PlotticoTrack.getTrackedValue = function() {
     return normalizedData;
 };
 
-function eventFire(el, etype) {
-    if (el.fireEvent) {
-        el.fireEvent('on' + etype);
-    }
-    else {
-        var evObj = document.createEvent('Events');
-        evObj.initEvent(etype, true, false);
-        return el.dispatchEvent(evObj);
-    }
-}
+// function eventFire(el, etype) {
+//     if (el.fireEvent) {
+//         el.fireEvent('on' + etype);
+//     }
+//     else {
+//         var evObj = document.createEvent('Events');
+//         evObj.initEvent(etype, true, false);
+//         return el.dispatchEvent(evObj);
+//     }
+// }
 
 function sendEnter(el) {
     var keyboardEvent = document.createEvent("KeyboardEvent");
@@ -259,17 +263,44 @@ PlotticoTrack.processLoginForm = function() {
 };
 
 PlotticoTrack.insertPanel = function() {
-    var sheet = window.document.styleSheets[0];
-    var ruleNum = 0;
-    if(sheet.cssRules) ruleNum = sheet.cssRules.length;
-    sheet.insertRule('body { margin-top: 50px; }', ruleNum);
-    document.body.style.marginTop = "50px";
-}
+    
+    // continuing add-toolbar.js
+    var bodyStyle = document.body.style;
+    var cssTransform = 'transform' in bodyStyle ? 'transform' : 'webkitTransform';
+    bodyStyle[cssTransform] = 'translateY(74px)';
+    
+    var xmlHttp = null;
+    
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", chrome.extension.getURL ("templates/panel.css"), true );
+    xmlHttp.addEventListener("load", function() {
+        
+        // var sheet = window.document.styleSheets[0];
+        // var ruleNum = 0;
+        // if(sheet.cssRules) ruleNum = sheet.cssRules.length;
+        // sheet.insertRule(xmlHttp.responseText, ruleNum);
+        
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = xmlHttp.responseText;
+        document.getElementsByTagName('head')[0].appendChild(style);
+        
+        xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", chrome.extension.getURL ("templates/panel.html"), true );
+        xmlHttp.addEventListener("load", function() {
+            var inject  = document.createElement("div");
+            inject.innerHTML = xmlHttp.responseText;
+            document.body.appendChild(inject);
+        });
+        xmlHttp.send( null );
+    });
+    xmlHttp.send( null );
+};
 
 PlotticoTrack.checkSend = function() {
     var pt = PlotticoTrack;
     if (pt.pt_XPath && typeof(pt.pt_NumberIndex) != -1) {
-        normalizedData = PlotticoTrack.getTrackedValue();
+        var normalizedData = PlotticoTrack.getTrackedValue();
         if (!normalizedData) {
             if (PlotticoTrack.bdataSent) {
                 console.log("Can no longer find the tracked element; reload!");
@@ -349,7 +380,7 @@ chrome.storage.sync.get({
             }
         }
         else {
-            setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
         }
     }
     else {

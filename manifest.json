@@ -24,10 +24,13 @@
       "storage",
      "http://*/*"
   ],
+  "web_accessible_resources": [
+    "templates/*"
+  ],
   "content_scripts": [{
         "matches": ["http://*/*", "https://*/*"],
         "js": ["recorder.js", "tracksend.js"]
   }],
   "offline_enabled": true,
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  "content_security_policy": "script-src 'sha256-Zy8+Ft7FDcIkrTYgl2BKmEW5XD97XustxKPceyLSioQ=' 'self' 'unsafe-eval' 'sha256-YNkUpNj1B2/FuE2RmwQf40OIO5rH69xQbG5AAxwshrA=' 'sha256-Pmun4RTarna683hWYftYdXPERPfEVV5fB+qvqh3xnmg=' 'sha256-yOlevQ21ZhlZZnL+sSVgVLFQCipBWFE9nxPA0PRavEk=' 'sha256-Zy8+Ft7FDcIkrTYgl2BKmEW5XD97XustxKPceyLSioQ=' 'sha256-Zy8+Ft7FDcIkrTYgl2BKmEW5XD97XustxKPceyLSioQ=' 'sha256-Zy8+Ft7FDcIkrTYgl2BKmEW5XD97XustxKPceyLSioQ=' 'sha256-Zy8+Ft7FDcIkrTYgl2BKmEW5XD97XustxKPceyLSioQ=' 'sha256-Zy8+Ft7FDcIkrTYgl2BKmEW5XD97XustxKPceyLSioQ=' 'sha256-PxYGyhC+nIVXj7c5e0yxnSGnl7D4+tOW2zoqS6WucaI=' 'sha256-V31rPP4H7fwBHEMptMatecB8su7/vNq0ZohzO3hPIKU=' 'sha256-Owxf/Ve2o9p+eC0MEDJdP2snzkN4EnCf4ZsD1rObr+I=' 'sha256-wEA7VbVcBML0g+bKzlRQ0QWxuofMYNgadDyKj0DglWE=' 'sha256-5Y3gwNZYPymj0/KDRBjWzgyJcJKQTLq+wa7O2k+qQu0=' 'sha256-5Y3gwNZYPymj0/KDRBjWzgyJcJKQTLq+wa7O2k+qQu0=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-k1u6w+dhDMunMWVmjmuv4AtrKBed6ekMVT1lQpyEL1w=' 'sha256-k1u6w+dhDMunMWVmjmuv4AtrKBed6ekMVT1lQpyEL1w=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-yd2vZma2dve/LgqToCmG5k+seENgkOsPr5K6/NBLq9Q=' 'sha256-yd2vZma2dve/LgqToCmG5k+seENgkOsPr5K6/NBLq9Q=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-GlYL0E/+FJVOKR5vvy7nLwXlkcYxUXB03MgvA4yeNjE=' 'sha256-GlYL0E/+FJVOKR5vvy7nLwXlkcYxUXB03MgvA4yeNjE=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-NxmcXx8mMcc4IIqVhspbsXwvR15LgMgZlFRZnr0e2jo=' 'sha256-RoSxVuvjYKDbU5f+aUEw02rEM9e2Lp9Hz/+rxbp6OMw=' 'sha256-RoSxVuvjYKDbU5f+aUEw02rEM9e2Lp9Hz/+rxbp6OMw=' 'sha256-RoSxVuvjYKDbU5f+aUEw02rEM9e2Lp9Hz/+rxbp6OMw=' 'sha256-RoSxVuvjYKDbU5f+aUEw02rEM9e2Lp9Hz/+rxbp6OMw=' 'sha256-RoSxVuvjYKDbU5f+aUEw02rEM9e2Lp9Hz/+rxbp6OMw='; object-src 'self'"
 }

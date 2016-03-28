@@ -22,9 +22,10 @@
 
 //Contact Brian Lloyd (brian@zope.com) with questions or comments.
 //---------------------------------------------------------------------------
+/*global chrome*/
 
 if (typeof(TestRecorder) == "undefined") {
-    TestRecorder = {};
+    var TestRecorder = {};
 }
 
 //---------------------------------------------------------------------------
@@ -809,7 +810,7 @@ TestRecorder.Recorder = function() {
 //one instance, and many of its methods are event handlers which need a
 //stable reference to the instance.
 
-recorder = new TestRecorder.Recorder();
+var recorder = new TestRecorder.Recorder();
 recorder.logfunc = function(msg) {console.log(msg);};
 
 TestRecorder.Recorder.prototype.start = function() {
