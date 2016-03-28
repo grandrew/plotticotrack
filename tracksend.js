@@ -469,4 +469,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
           PlotticoTrack.playRecording();
         })
     }
+    if (request.action == "ping") {
+        if("pt_trackedSite" in PlotticoTrack && location.href == PlotticoTrack.pt_trackedSite) {
+          sendResponse({"ping": "pong"});
+        } 
+    }    
+    
+
 });

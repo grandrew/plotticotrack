@@ -1,5 +1,13 @@
 window.onload = function(){
     //document.querySelector('input#startupd').onclick=function() {return false;};
+    console.log("disabled");
+    document.getElementById("selectElement").disabled = true;
+      	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+          chrome.tabs.sendMessage(tabs[0].id, {action: "ping"}, function(v) {
+            console.log("pong: "+v);
+            if(typeof(v) != "undefined" && "ping" in v && v["ping"] == "pong") document.getElementById("selectElement").disabled = false;
+          });  
+  	});
     document.querySelector('input#settracked').onclick=function() {
       var trackedInfo = {
         "url": document.getElementById("url").value,
@@ -28,6 +36,7 @@ window.onload = function(){
         document.getElementById("dropRecording").disabled = true;
         document.getElementById("playRecording").disabled = true;
       }
+      
     });
     document.querySelector('input#selectElement').onclick=function() {
       	chrome.tabs.getSelected(null, function(tab) {
