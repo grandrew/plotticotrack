@@ -110,7 +110,7 @@ PlotticoTrack.parseUnits = function(str) {
 
 // TODO: multiple data send support
 PlotticoTrack.sendToPlot = function(data, hash) {
-    var pushSrc = "https://plotti.co/" + hash + "?d=" + data + "&h=" + Math.random();
+    var pushSrc = "https://plotti.co/" + hash + "?d=" + data + "&h=" + Math.random() + PlotticoTrack.pt_dataCaption;
     console.log("Sending to plot: " + pushSrc);
     var img = new Image();
     img.src = pushSrc;
@@ -508,6 +508,7 @@ PlotticoTrack.saveValues = function(trackedInfo) {
                 var v = l.tracklist[i];
                 v.nindex = trackedInfo.nindex;
                 v.selector = trackedInfo.xpath;
+                v.rdy = true;
                 chrome.storage.sync.set({ "tracklist": l.tracklist }, function() {
                     // Notify that we saved.
                     console.log("set values");
@@ -545,6 +546,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         };
         document.onclick = function(e) {
             e.preventDefault();
+            e.stopPropagation();
             var charIndex = getCaretCharacterOffsetWithin(e.target);
             var xpath = PlotticoTrack.createSelector(e.target);
             var targetText = e.target.innerHTML;

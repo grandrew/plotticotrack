@@ -91,7 +91,7 @@ window.onload = function(){
                     { type: 'button', id: 'gourl', caption: 'Visit site url and start', img: 'icon-search', disabled: true},
                     { type: 'break' },
                     { type: 'button', id: 'goplot', caption: 'View plot', img: 'icon-page', disabled: true},
-                    { type: 'html', html: '<div style="width: 240px;text-align: right;"><a href="https://plotti.co" target="_blank">plotti.co</a> site tracker</div>'},
+                    { type: 'html', html: '<div style="width: 240px;text-align: right;"><a href="https://plotti.co" target="_blank">plotti.co</a> site tracker <u>pro</u></div>'},
                 ],
                 onClick: function (target, data) {
                     if(target == "gourl") {
@@ -170,7 +170,7 @@ window.onload = function(){
     w2ui.grid.on('add', function(event) {
         var nrid = 1;
         if(w2ui.grid.records.length) nrid = w2ui.grid.records[w2ui.grid.records.length-1].recid+1;
-        w2ui['grid'].add({ recid: nrid, phash: makeid(), url: "", timer: 60*5, caption: '', selector: "", nrindex: -1, script: "" });
+        w2ui['grid'].add({ recid: nrid, phash: makeid(), url: "paste url here", timer: 60*5, caption: '', selector: "", nrindex: -1, script: "" });
         w2ui.grid.editField(nrid, 2);
     });
     
