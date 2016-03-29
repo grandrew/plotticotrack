@@ -116,6 +116,7 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     console.log("Sending to plot: " + pushSrc);
     var img = new Image();
     img.src = pushSrc;
+    document.getElementById("pt_working").innerHTML = "WORKING: sent data "+data.join(",");
     img.onload = function(e) {
         PlotticoTrack.bdataSent = true;
         console.log("data successfully sent!");
@@ -305,7 +306,7 @@ PlotticoTrack.insertPanel = function() {
             document.body.appendChild(inject);
             if("pt_working" in PlotticoTrack) {
                 document.getElementById("pt_selectaction").style.display = "none";
-                document.getElementById("pt_working").style.display = "inherit";
+                document.getElementById("pt_working").style.display = "inline";
             }
         });
         xmlHttp.send( null );
@@ -336,7 +337,7 @@ PlotticoTrack.checkSend = function() {
                 return;
             }
         }
-        if (pt.pt_oldData.join(",") == normalizedData.join(",") && PlotticoTrack.bdataSent) {
+        if (pt.pt_oldData && pt.pt_oldData.join(",") == normalizedData.join(",") && PlotticoTrack.bdataSent) {
             // need refresh
             console.log("Will do a full page refresh");
             location.reload();
@@ -530,7 +531,7 @@ chrome.storage.sync.get({
                     PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
                     if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
                         document.getElementById("pt_selectaction").style.display = "none";
-                        document.getElementById("pt_working").style.display = "inherit";
+                        document.getElementById("pt_working").style.display = "inline";
                     }
                     PlotticoTrack.pt_working = true;
                 }
