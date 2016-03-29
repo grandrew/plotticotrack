@@ -116,7 +116,7 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     console.log("Sending to plot: " + pushSrc);
     var img = new Image();
     img.src = pushSrc;
-    document.getElementById("pt_working").innerHTML = "WORKING: sent data "+data.join(",");
+    document.getElementById("pt_working").innerHTML = "Sent data="+data.join(",");
     img.onload = function(e) {
         PlotticoTrack.bdataSent = true;
         console.log("data successfully sent!");
@@ -305,8 +305,7 @@ PlotticoTrack.insertPanel = function() {
             inject.innerHTML = xmlHttp.responseText;
             document.body.appendChild(inject);
             if("pt_working" in PlotticoTrack) {
-                document.getElementById("pt_selectaction").style.display = "none";
-                document.getElementById("pt_working").style.display = "inline";
+                document.getElementById("plotticotrack_work").style.visibility = "visible";
             }
         });
         xmlHttp.send( null );
@@ -367,6 +366,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     }); // hope it will complete before we stop and exit...
 
     console.log("Meaasge action");
+    document.getElementById("plotticotrack_message").style.visibility = "visible";
     var sheet = window.document.styleSheets[0];
     var ruleNum = 0;
     if (sheet.cssRules) ruleNum = sheet.cssRules.length;
@@ -433,6 +433,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             sheet.deleteRule(ruleNum);
             document.getElementById("pt_startupd").disabled = false;
             document.getElementById(bt_id).disabled = true;
+            document.getElementById("plotticotrack_message").style.visibility = "hidden";
             return false;
         };
     }, 100);
@@ -530,8 +531,7 @@ chrome.storage.sync.get({
                 } else {
                     PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
                     if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
-                        document.getElementById("pt_selectaction").style.display = "none";
-                        document.getElementById("pt_working").style.display = "inline";
+                        document.getElementById("plotticotrack_work").style.visibility = "visible";
                     }
                     PlotticoTrack.pt_working = true;
                 }

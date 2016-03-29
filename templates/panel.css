@@ -782,6 +782,15 @@ div.project-info:after {
     padding-top: 10px;
 }
 
+.plotticotrack_message {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    opacity: 0.90;
+    line-height: 50px;
+    color: red;
+}
+
 .pl_src0 { color: #5DA5DA; /* (blue) */   }
 .pl_src1 { color: #F15854; /* (red) */    }
 .pl_src2 { color: #DECF3F; /* (yellow) */ }
