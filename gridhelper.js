@@ -17,23 +17,6 @@ function getAllElementsWithAttribute(attribute)
   return matchingElements;
 }
 
-function digest(text) {
-    var shaObj = new jsSHA("SHA-256", "TEXT");
-    shaObj.update(text);
-    return shaObj.getHash("B64");
-}
-
-function get_manifest_entry() {
-    var out = [];
-    for(var i=0;i<events.length;i++) {
-        var els = getAllElementsWithAttribute(events[i]);
-        for(var j=0;j<els.length;j++) {
-            out.push("sha256-"+digest(els[j].getAttribute(events[i])));
-        }
-    }
-    return "'"+out.join("' '")+"'";
-}
-
 function vulcanise_inlines() {
     for(var i=0;i<events.length;i++) {
         var els = getAllElementsWithAttribute(events[i]);

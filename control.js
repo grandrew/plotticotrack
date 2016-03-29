@@ -1,75 +1,6 @@
 /*global makeid,chrome, MutationObserver, vulcanise_inlines, w2ui*/
 window.onload = function(){
-    
-    //document.querySelector('input#startupd').onclick=function() {return false;};
-//     console.log("disabled");
-//     document.getElementById("selectElement").disabled = true;
-//       	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-//           chrome.tabs.sendMessage(tabs[0].id, {action: "ping"}, function(v) {
-//             console.log("pong: "+v);
-//             if(typeof(v) != "undefined" && "ping" in v && v["ping"] == "pong") document.getElementById("selectElement").disabled = false;
-//           });
-//   	});
-//     document.querySelector('input#settracked').onclick=function() {
-//       var trackedInfo = {
-//         "url": document.getElementById("url").value,
-//         "hash": document.getElementById("hash").value,
-//         "nindex": parseInt(document.getElementById("nindex").value),
-//         "xpath": document.getElementById("xpath").value,
-//         "interval": document.getElementById("checkInt").value
-//       };
-//       chrome.storage.sync.set(trackedInfo, function() {
-//         // Notify that we saved.
-//         console.log("set values");
-//       });
-//       console.log("going to set values");
-//       return false;
-//     };
-//     chrome.storage.sync.get({"url":"", "hash":"", "nindex": -1, "xpath": "", "interval": 5000, "recording": null},function(v){
-//       document.getElementById("url").value = v["url"];
-//       document.getElementById("hash").value = v["hash"];
-//       document.getElementById("nindex").value  = v["nindex"];
-//       document.getElementById("xpath").value = v["xpath"];
-//       document.getElementById("checkInt").value = v["interval"];
-//       if(v.recording) {
-//         document.getElementById("dropRecording").disabled = false;
-//         document.getElementById("playRecording").disabled = false;
-//       } else {
-//         document.getElementById("dropRecording").disabled = true;
-//         document.getElementById("playRecording").disabled = true;
-//       }
-      
-//     });
-//     document.querySelector('input#selectElement').onclick=function() {
-//       	chrome.tabs.getSelected(null, function(tab) {
-//       	    console.log("sending message!");
-//       	    chrome.runtime.sendMessage({action: "select", recorded_tab: tab.id, start_url: ""});
-      	    
-//       	});
-//       	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-//             chrome.tabs.sendMessage(tabs[0].id, {action: "select"}, function(response) {});
-//         });
-//         window.close();
-//     };
-//     document.querySelector('input#dropRecording').onclick=function() {
-//         chrome.storage.sync.set({"recording":null}, function() {
-//             // Notify that we saved.
-//             console.log("recording deleted");
-//         });
-//     };
-//     document.querySelector('input#playRecording').onclick=function() {
-//   	    console.log("will play recording!");
-//   	    chrome.tabs.getSelected(null, function(tab) {
-//       	    console.log("sending message!");
-//       	    chrome.runtime.sendMessage({action: "play", recorded_tab: tab.id, start_url: ""});
-      	    
-//       	});
-//       	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-//             chrome.tabs.sendMessage(tabs[0].id, {action: "play"}, function(response) {});
-//         });
-//         window.close();
-//     };
-    
+ 
     $(function () {
         $('#grid').w2grid({
             name: 'grid',
@@ -121,7 +52,7 @@ window.onload = function(){
                 }
             },
             columns: [
-                { field: 'rdy', caption: 'Enabled', size: '5%', render: 'toggle'},
+                { field: 'rdy', caption: 'Enabled', size: '5%', render: 'toggle', hidden: true },
                 { field: 'phash', caption: 'Plotti.co Hash', size: '15%', editable: { type : 'text', inTag : '', style   : '' }},
                 { field: 'url', caption: 'Track URL', size: '50%', editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'timer', caption: 'Timer (s)', size: '10%', editable: { type : 'int', inTag : '', style   : '' } },
@@ -130,15 +61,7 @@ window.onload = function(){
                 { field: 'nrindex', caption: 'NRIndex', size: '10%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'script', caption: 'Script', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } }
             ],
-            records: [
-                // { recid: 1, rdy: true, phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]" },
-                // { recid: 2, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
-                // { recid: 3, rdy: false,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
-                // { recid: 4, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
-                // { recid: 5, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
-                // { recid: 6, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
-                // { recid: 7, rdy: true,phash: "asdfgre", url: "http://rbc.ru", timer: 5700, caption: 'bps', selector: "a > b>d sdfasdfasdfasd fasdf asd fasfds asdf asd", nrindex: 2, script: "[1,2,3,4]"  },
-            ]
+            records: [  ]
         });
     });
     vulcanise_inlines();
