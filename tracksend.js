@@ -105,12 +105,14 @@ PlotticoTrack.parseUnits = function(str) {
     str = str.replace(",", ".");
     // TODO: wolfram|alpha units simplifier / parser? [and cache alpha results w/convert ratio?]
     // cheaper and simpler: x=UnitConvert[Quantity[0.2,"GBit/s"]];x/Quantity[1,QuantityUnit[x]]
+    PlotticoTrack.pt_captionHint = str.replace(PlotticoTrack.nrReg, "");
     return parseFloat(str);
 };
 
-// TODO: multiple data send support
 PlotticoTrack.sendToPlot = function(data, hash) {
-    var pushSrc = "https://plotti.co/" + hash + "?d=" + data + "&h=" + Math.random() + PlotticoTrack.pt_dataCaption;
+    var caption = PlotticoTrack.pt_captionHint;
+    if(PlotticoTrack.pt_dataCaption) caption = PlotticoTrack.pt_dataCaption;
+    var pushSrc = "https://plotti.co/" + hash + "?d=" + data.join(",") + caption.trim() + "&h=" + Math.random();
     console.log("Sending to plot: " + pushSrc);
     var img = new Image();
     img.src = pushSrc;
@@ -138,13 +140,23 @@ PlotticoTrack.sendRequest = function(uri, data, cb) {
 };
 
 PlotticoTrack.getTrackedValue = function() {
-    var el = PlotticoTrack.querySelector(PlotticoTrack.pt_XPath);
-    if (!el) return false;
-    var inData = el.innerHTML;
-    var dataList = PlotticoTrack.parseTrackableValues(inData);
-    if (dataList.length <= PlotticoTrack.pt_NumberIndex) return false;
-    var trackData = dataList[PlotticoTrack.pt_NumberIndex];
-    var normalizedData = PlotticoTrack.parseUnits(trackData);
+    var normalizedData = [];
+    for(var i=0; i<PlotticoTrack.pt_XPath.length;i++) {
+        if(typeof(PlotticoTrack.pt_XPath[i]) != "string" || !PlotticoTrack.pt_XPath[i].length) {
+            continue;
+        }
+        //console.log("Parsing "+i+" xp "+PlotticoTrack.pt_XPath[i]+'  t' + typeof(PlotticoTrack.pt_XPath[i]) );
+        var el = PlotticoTrack.querySelector(PlotticoTrack.pt_XPath[i]);
+        if (!el) return false;
+        var inData = el.innerHTML;
+        //console.log("Parse text "+inData);
+        var dataList = PlotticoTrack.parseTrackableValues(inData);
+        //console.log(dataList);
+        if (dataList.length <= parseInt(PlotticoTrack.pt_NumberIndex[i])) return false;
+        var trackData = dataList[parseInt(PlotticoTrack.pt_NumberIndex[i])];
+        //console.log("Parsing tackdata "+trackData);
+        normalizedData[i] = PlotticoTrack.parseUnits(trackData);
+    }
     return normalizedData;
 };
 
@@ -267,7 +279,7 @@ PlotticoTrack.insertPanel = function() {
     // continuing add-toolbar.js
     var bodyStyle = document.body.style;
     var cssTransform = 'transform' in bodyStyle ? 'transform' : 'webkitTransform';
-    bodyStyle[cssTransform] = 'translateY(74px)';
+    bodyStyle[cssTransform] = 'translateY(50px)';
     
     var xmlHttp = null;
     
@@ -291,6 +303,10 @@ PlotticoTrack.insertPanel = function() {
             var inject  = document.createElement("div");
             inject.innerHTML = xmlHttp.responseText;
             document.body.appendChild(inject);
+            if("pt_working" in PlotticoTrack) {
+                document.getElementById("pt_selectaction").style.display = "none";
+                document.getElementById("pt_working").style.display = "inherit";
+            }
         });
         xmlHttp.send( null );
     });
@@ -299,11 +315,12 @@ PlotticoTrack.insertPanel = function() {
 
 PlotticoTrack.checkSend = function() {
     var pt = PlotticoTrack;
-    if (pt.pt_XPath && typeof(pt.pt_NumberIndex) != -1) {
+    if (pt.pt_XPath.length) {
         var normalizedData = PlotticoTrack.getTrackedValue();
         if (!normalizedData) {
             if (PlotticoTrack.bdataSent) {
                 console.log("Can no longer find the tracked element; reload!");
+                window.location.href = PlotticoTrack.pt_trackedSite;
                 location.reload();
             }
             else {
@@ -319,7 +336,7 @@ PlotticoTrack.checkSend = function() {
                 return;
             }
         }
-        if (pt.pt_oldData == normalizedData && PlotticoTrack.bdataSent) {
+        if (pt.pt_oldData.join(",") == normalizedData.join(",") && PlotticoTrack.bdataSent) {
             // need refresh
             console.log("Will do a full page refresh");
             location.reload();
@@ -336,6 +353,88 @@ PlotticoTrack.checkSend = function() {
         }
     }
     else {}
+};
+
+PlotticoTrack.selectElement = function (num, bt_id) {
+    if (PlotticoTrack.pt_recStarted) {
+        PlotticoTrack.pt_recStarted = false;
+        recorder.stop();
+    }
+    chrome.runtime.sendMessage({
+        action: "saveRecording",
+        page: PlotticoTrack.pt_trackedSite
+    }); // hope it will complete before we stop and exit...
+
+    console.log("Meaasge action");
+    var sheet = window.document.styleSheets[0];
+    var ruleNum = 0;
+    if (sheet.cssRules) ruleNum = sheet.cssRules.length;
+    sheet.insertRule('*:hover { border: 1px solid blue; }', ruleNum);
+    var old_mov = document.onmouseover;
+    var old_moo = document.onmouseout;
+    var old_cl = document.onclick;
+    var old_kp = document.onkeypress;
+    var old_kd = document.onkeydown;
+    var old_ku = document.onkeyup;
+    function disable_enter (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }
+    document.onkeypress = disable_enter;
+    document.onkeydown = disable_enter;
+    document.onkeyup = disable_enter;
+    document.onmouseover = function(e) {
+        e.target.contentEditable = true;
+    };
+    document.onmouseout = function(e) {
+        e.target.contentEditable = false;
+    };
+    setTimeout(function () {
+        document.onclick = function(e) {
+            console.log("click happened!");
+            e.preventDefault();
+            e.stopPropagation();
+            var charIndex = getCaretCharacterOffsetWithin(e.target);
+            var xpath = PlotticoTrack.createSelector(e.target);
+            var targetText = e.target.innerHTML;
+            var trackables = PlotticoTrack.parseTrackableValues(targetText);
+            var trackablesIndex = PlotticoTrack.parseTrackableIndex(targetText);
+            var min_diff = 99999999;
+            var nrIndex = -1;
+            for (var i = 0; i < trackablesIndex.length; i++) {
+                var trdiff = Math.abs(trackablesIndex[i] - charIndex);
+                if (trdiff < min_diff) {
+                    min_diff = trdiff;
+                    nrIndex = i;
+                }
+            }
+            console.log("Target text: " + targetText);
+            console.log("XPath: " + xpath + " Index: " + nrIndex);
+            console.log(charIndex);
+            console.log(trackablesIndex);
+            PlotticoTrack.pt_XPath[num] = xpath;
+            PlotticoTrack.pt_NumberIndex[num] = nrIndex;
+            var trackedInfo = {
+                "url": document.location.href,
+                "nindex": PlotticoTrack.pt_NumberIndex.join(";"),
+                "xpath": PlotticoTrack.pt_XPath.join(";")
+            };
+            PlotticoTrack.saveValues(trackedInfo);
+            document.onmouseover = old_mov;
+            document.onmouseout = old_moo;
+            document.onclick = old_cl;
+            document.onkeypress = old_kp;
+            document.onkeydown = old_kd;
+            document.onkeyup = old_ku;
+            sheet.deleteRule(ruleNum);
+            document.getElementById("pt_startupd").disabled = false;
+            document.getElementById(bt_id).disabled = true;
+            return false;
+        };
+    }, 100);
 };
 
 
@@ -397,20 +496,28 @@ chrome.storage.sync.get({
             var v = l.tracklist[i];
             PlotticoTrack.pt_trackedSite = v["url"];
             PlotticoTrack.pt_Hash = v["phash"];
-            PlotticoTrack.pt_NumberIndex = v["nrindex"];
-            PlotticoTrack.pt_XPath = v["selector"];
+            if(v.nrindex && typeof(v.nrindex) == "string") PlotticoTrack.pt_NumberIndex = v["nrindex"].split(";");
+            else PlotticoTrack.pt_NumberIndex = [];
+            if(v["selector"]) PlotticoTrack.pt_XPath = v["selector"].split(";");
+            else PlotticoTrack.pt_XPath = [];
             PlotticoTrack.pt_oldData = false;
-            PlotticoTrack.pt_checkInterval = v["timer"]; // tracking interval
-            PlotticoTrack.pt_dataCaption = v["caption"]; // TODO HERE
+            PlotticoTrack.pt_checkInterval = v["timer"] * 1000; // tracking interval
+            PlotticoTrack.pt_dataCaption = v["caption"];
             PlotticoTrack.pt_waitInterval = 700; // intervals to check for value while waiting
+            PlotticoTrack.pt_captionHint = "";
             PlotticoTrack.pt_recIndex = 0;
             PlotticoTrack.pt_recording = v.script;
             //console.log("local data "+get_vals(PlotticoTrack));
             if (PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
                 console.log("Site found! Launching");
                 PlotticoTrack.insertPanel();
-                if (!PlotticoTrack.pt_XPath) {
+                if (!PlotticoTrack.pt_XPath.length) {
                     console.log("No xpath! Trying recording session");
+                    document.addEventListener("pt_blueclick", function(){PlotticoTrack.selectElement(0, "pt_blueline");}, false);
+                    document.addEventListener("pt_redclick", function(){PlotticoTrack.selectElement(1, "pt_redline");}, false);
+                    document.addEventListener("pt_yellowclick", function(){PlotticoTrack.selectElement(2, "pt_yellowline");}, false);
+                    // TODO HERE: what to do when stating?
+                    document.addEventListener("pt_startclick", function(){window.location.href = PlotticoTrack.pt_trackedSite; location.reload();}, false);
                     if (PlotticoTrack.pt_recording) {
                         console.log("Recording exists! Not starting recorer");
                     }
@@ -419,9 +526,13 @@ chrome.storage.sync.get({
                         recorder.start();
                         PlotticoTrack.pt_recStarted = true;
                     }
-                }
-                else {
+                } else {
                     PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+                    if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
+                        document.getElementById("pt_selectaction").style.display = "none";
+                        document.getElementById("pt_working").style.display = "inherit";
+                    }
+                    PlotticoTrack.pt_working = true;
                 }
             }
             break;
@@ -491,7 +602,6 @@ PlotticoTrack.playOne = function() {
     }
     console.log("Trying to perform action " + rec.type + " on element " + rec.info.selector);
     var el = document.querySelector(rec.info.selector);
-    // TODO HERE: if element is not found - try some more times waiting for it.
     if (!el) console.log("  --- element not found!");
     if (el && rec.type == TestRecorder.EventTypes.Click) {
         console.log("Executing click!");
@@ -506,14 +616,14 @@ PlotticoTrack.saveValues = function(trackedInfo) {
         for(i=0;i<l.tracklist.length;i++){
             if(l.tracklist[i].url == location.href) {
                 var v = l.tracklist[i];
-                v.nindex = trackedInfo.nindex;
+                v.nrindex = trackedInfo.nindex;
                 v.selector = trackedInfo.xpath;
                 v.rdy = true;
                 chrome.storage.sync.set({ "tracklist": l.tracklist }, function() {
                     // Notify that we saved.
                     console.log("set values");
                 });
-                break;
+                return;
             }
         }
     });
@@ -522,61 +632,8 @@ PlotticoTrack.saveValues = function(trackedInfo) {
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log("Meaasge!" + request.action);
     if (request.action == "select") {
-        if (PlotticoTrack.pt_recStarted) {
-            PlotticoTrack.pt_recStarted = false;
-            recorder.stop();
-        }
-        chrome.runtime.sendMessage({
-            action: "saveRecording"
-        }); // hope it will complete before we stop and exit...
+        console.log("unsupported");
 
-        console.log("Meaasge action");
-        var sheet = window.document.styleSheets[0];
-        var ruleNum = 0;
-        if (sheet.cssRules) ruleNum = sheet.cssRules.length;
-        sheet.insertRule('*:hover { border: 1px solid blue; }', ruleNum);
-        var old_mov = document.onmouseover;
-        var old_moo = document.onmouseout;
-        var old_cl = document.onclick;
-        document.onmouseover = function(e) {
-            e.target.contentEditable = true;
-        };
-        document.onmouseout = function(e) {
-            e.target.contentEditable = false;
-        };
-        document.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var charIndex = getCaretCharacterOffsetWithin(e.target);
-            var xpath = PlotticoTrack.createSelector(e.target);
-            var targetText = e.target.innerHTML;
-            var trackables = PlotticoTrack.parseTrackableValues(targetText);
-            var trackablesIndex = PlotticoTrack.parseTrackableIndex(targetText);
-            var min_diff = 99999999;
-            var nrIndex = -1;
-            for (var i = 0; i < trackablesIndex.length; i++) {
-                var trdiff = Math.abs(trackablesIndex[i] - charIndex);
-                if (trdiff < min_diff) {
-                    min_diff = trdiff;
-                    nrIndex = i;
-                }
-            }
-            console.log("Target text: " + targetText);
-            console.log("XPath: " + xpath + " Index: " + nrIndex);
-            console.log(charIndex);
-            console.log(trackablesIndex);
-            var trackedInfo = {
-                "url": document.location.href,
-                "nindex": nrIndex,
-                "xpath": xpath
-            };
-            PlotticoTrack.saveValues(trackedInfo);
-            document.onmouseover = old_mov;
-            document.onmouseout = old_moo;
-            document.onclick = old_cl;
-            sheet.deleteRule(ruleNum);
-            return false;
-        };
         sendResponse({});
     }
     if (request.action == "play") {

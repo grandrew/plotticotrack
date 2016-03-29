@@ -573,13 +573,6 @@ button[disabled]:active {
   text-shadow: none; }
 
 /* Style the example page.
-******************************************************************************/
-/* Global Reset
-------------------------------------------------------------------------------*/
-/* http://meyerweb.com/eric/tools/css/reset/
-   v2.0 | 20110126
-   License: none (public domain)
-*/
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -599,8 +592,6 @@ time, mark, audio, video {
   font-size: 100%;
   font: inherit;
   vertical-align: baseline; }
-
-/* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
   display: block; }
@@ -623,8 +614,6 @@ table {
   border-collapse: collapse;
   border-spacing: 0; }
 
-/* Page specific
-------------------------------------------------------------------------------*/
 body {
   background: #fff;
   color: #333;
@@ -750,7 +739,7 @@ button.fat-letters {
 
 button.download-itunes {
   margin-top: 62px; }
-
+*/
 /* Clear Floated Elements
 ------------------------------------------------------------------------------*/
 .column:after,
@@ -773,13 +762,13 @@ div.project-info:after {
 .plotticotrack_panel {
     background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
     position: fixed!important;
-    top: -74px;
+    top: -50px;
     left: 0px;
     width: 100%;
     height: 50px;
     padding-left: 30px;
     z-index: 999999999;
-} 
+}
 
 .panel-text {
     font-size: 13px;
@@ -788,3 +777,11 @@ div.project-info:after {
     text-decoration: none;
     color: black;
 }
+
+.plottico_panel_inside {
+    padding-top: 10px;
+}
+
+.pl_src0 { color: #5DA5DA; /* (blue) */   }
+.pl_src1 { color: #F15854; /* (red) */    }
+.pl_src2 { color: #DECF3F; /* (yellow) */ }

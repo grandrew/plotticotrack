@@ -100,9 +100,19 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	sendResponse({'items': testcase_items});
   }
   if (request.action == "saveRecording") {
-    chrome.storage.sync.set({"recording": testcase_items}, function() {
-      // Notify that we saved.
-      console.log("recording saved");
+    chrome.storage.sync.get({"tracklist": []}, function(l) {
+        var i;
+        for(i=0;i<l.tracklist.length;i++){
+            if(l.tracklist[i].url == request.page) {
+                var v = l.tracklist[i];
+                v.script = testcase_items;
+                chrome.storage.sync.set({ "tracklist": l.tracklist }, function() {
+                    // Notify that we saved.
+                    console.log("set values");
+                });
+                return;
+            }
+        }
     });
   }
 });

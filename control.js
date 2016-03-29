@@ -8,7 +8,7 @@ window.onload = function(){
 //           chrome.tabs.sendMessage(tabs[0].id, {action: "ping"}, function(v) {
 //             console.log("pong: "+v);
 //             if(typeof(v) != "undefined" && "ping" in v && v["ping"] == "pong") document.getElementById("selectElement").disabled = false;
-//           });  
+//           });
 //   	});
 //     document.querySelector('input#settracked').onclick=function() {
 //       var trackedInfo = {
@@ -25,7 +25,7 @@ window.onload = function(){
 //       console.log("going to set values");
 //       return false;
 //     };
-//     chrome.storage.sync.get({"url":"", "hash":"", "nindex": -1, "xpath": "", "interval": 5000, "recording": null},function(v){ 
+//     chrome.storage.sync.get({"url":"", "hash":"", "nindex": -1, "xpath": "", "interval": 5000, "recording": null},function(v){
 //       document.getElementById("url").value = v["url"];
 //       document.getElementById("hash").value = v["hash"];
 //       document.getElementById("nindex").value  = v["nindex"];
@@ -47,7 +47,7 @@ window.onload = function(){
       	    
 //       	});
 //       	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-//             chrome.tabs.sendMessage(tabs[0].id, {action: "select"}, function(response) {});  
+//             chrome.tabs.sendMessage(tabs[0].id, {action: "select"}, function(response) {});
 //         });
 //         window.close();
 //     };
@@ -65,7 +65,7 @@ window.onload = function(){
       	    
 //       	});
 //       	chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-//             chrome.tabs.sendMessage(tabs[0].id, {action: "play"}, function(response) {});  
+//             chrome.tabs.sendMessage(tabs[0].id, {action: "play"}, function(response) {});
 //         });
 //         window.close();
 //     };
@@ -127,7 +127,7 @@ window.onload = function(){
                 { field: 'timer', caption: 'Timer (s)', size: '10%', editable: { type : 'int', inTag : '', style   : '' } },
                 { field: 'caption', caption: 'Data caption', size: '120px', editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'selector', caption: 'Selector', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' }},
-                { field: 'nrindex', caption: 'NRIndex', size: '10%', hidden: true, editable: { type : 'int', inTag : '', style   : '' } },
+                { field: 'nrindex', caption: 'NRIndex', size: '10%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'script', caption: 'Script', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } }
             ],
             records: [
@@ -155,7 +155,7 @@ window.onload = function(){
       //mutations.forEach(function(mutation) {
         //console.log(mutation.type);
         vulcanise_inlines();
-      //});    
+      //});
     });
      
     // configuration of the observer:
@@ -210,7 +210,7 @@ window.onload = function(){
         };
     });
     
-    chrome.storage.sync.get({"tracklist": []},function(v){ 
+    chrome.storage.sync.get({"tracklist": []},function(v){
         w2ui.grid.records = v.tracklist;
         w2ui.grid.refresh();
     });

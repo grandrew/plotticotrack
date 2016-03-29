@@ -1,8 +1,12 @@
 <div class="btnSection darkSection plotticotrack_panel">
-        <div>
-          <button class="minimal">Select <span>blue</span> line</button>
-          <button class="minimal">Select <span>red</span> line</button>
-          <button class="minimal">Select <span>yellow</span> line</button>
-          <span class="panel-text" style="width: 300px">Please use mouse to login!</span>
+        <div class="plottico_panel_inside">
+            <span style="margin-right: 20px">Plotti.co Tracker</span>
+          <span id="pt_selectaction">
+          <button id="pt_blueline" class="minimal" title="Click this button, then click on the number on the page" onclick="document.dispatchEvent(new CustomEvent('pt_blueclick'))">Select <span class="pl_src0">blue</span> line</button>
+          <button id="pt_redline" class="minimal" title="Click this button, then click on the number on the page" onclick="document.dispatchEvent(new CustomEvent('pt_redclick'))">Select <span class="pl_src1">red</span> line</button>
+          <button id="pt_yellowline" class="minimal" title="Click this button, then click on the number on the page" onclick="document.dispatchEvent(new CustomEvent('pt_yellowclick'))">Select <span class="pl_src2">yellow</span> line</button>
+          <button id="pt_startupd" class="cupid-green" disabled="true" title="Please select values to track, then press start" onclick="document.dispatchEvent(new CustomEvent('pt_startclick'))">Start updating</button>
+          </span>
+          <span id="pt_working" style="visibility: hidden; color: red">WORKING</span>
         </div>
-</div> 
+</div>
