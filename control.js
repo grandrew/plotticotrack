@@ -152,10 +152,10 @@ window.onload = function(){
      
     // create an observer instance
     var observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
+      //mutations.forEach(function(mutation) {
         //console.log(mutation.type);
         vulcanise_inlines();
-      });    
+      //});    
     });
      
     // configuration of the observer:
