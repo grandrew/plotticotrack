@@ -63,14 +63,14 @@ chrome.windows.onCreated.addListener(function (window) {
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log(request);
+//  console.log(request);
   if (request.action == "checkUrl") {
       chrome.tabs.query({}, function(tabs) {
           tabs.forEach(function(tab) {
               chrome.tabs.sendMessage(tab.id, request, function(r) {
-                  console.log("CheckUrl Response: "+r);
+                //   console.log("CheckUrl Response: "+r);
                   if(r && "working" in r) {
-                        console.log("SEND CheckUrl Response: "+r);
+                        // console.log("SEND CheckUrl Response: "+r);
                       chrome.tabs.sendMessage(sender.tab.id, r);
                   }
                  });

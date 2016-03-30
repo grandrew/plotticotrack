@@ -1,4 +1,4 @@
-/*global chrome*/
+/*global chrome, LZString*/
 
 var events = ["onclick", "onmouseover", "onmouseout", "onmousedown", "onmouseup", "onscroll", "oncontextmenu", "onmousewheel", "ondblclick"];
 

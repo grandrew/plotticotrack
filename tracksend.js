@@ -5,6 +5,7 @@ var PlotticoTrack;
 if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack = {};
     PlotticoTrack.pt_retry = 0;
+    PlotticoTrack.pt_retry_action = 0;
     PlotticoTrack.my_hash = Math.random();
 }
 
@@ -114,13 +115,13 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     var caption = PlotticoTrack.pt_captionHint;
     if(PlotticoTrack.pt_dataCaption) caption = PlotticoTrack.pt_dataCaption;
     var pushSrc = "https://plotti.co/" + hash + "?d=" + data.join(",") + caption.trim() + "&h=" + Math.random();
-    console.log("Sending to plot: " + pushSrc);
+    // console.log("Sending to plot: " + pushSrc);
     var img = new Image();
     img.src = pushSrc;
     document.getElementById("pt_working").innerHTML = "Sent data="+data.join(",");
     img.onload = function(e) {
         PlotticoTrack.bdataSent = true;
-        console.log("data successfully sent!");
+        // console.log("data successfully sent!");
         // retry, clear interval here?
         // but need to make sure we send data only once, so in case of good conn - its ok
     };
@@ -321,7 +322,7 @@ PlotticoTrack.checkSend = function() {
     var pt = PlotticoTrack;
     if (pt.pt_XPath.length) {
         var normalizedData = PlotticoTrack.getTrackedValue();
-        if (!normalizedData) {
+        if (!normalizedData.length) {
             if (PlotticoTrack.bdataSent) {
                 console.log("Can no longer find the tracked element; reload!");
                 window.location.href = PlotticoTrack.pt_trackedSite;
@@ -331,9 +332,17 @@ PlotticoTrack.checkSend = function() {
                 console.log("can not get normalizedData; will retry");
                 PlotticoTrack.pt_retry++;
                 PlotticoTrack.playOne();
+                if(PlotticoTrack.pt_retry % 30 == 0) {
+                    PlotticoTrack.pt_recIndex = 0; // retry from beginning...
+                }
 
-                if (PlotticoTrack.pt_retry > 30) {
-                    console.log("Failed to wait for the data for 100 retries. Giving up.");
+                if (PlotticoTrack.pt_retry > 50) {
+                    console.log("Failed to wait for the data with retries. Giving up.");
+                    document.getElementById("pt_working").innerHTML = "ERROR: Timeout waiting for tracked element!";
+                    PlotticoTrack.pt_retry=0;
+                    PlotticoTrack.pt_recIndex = 0; // retry from beginning...
+                    setTimeout(PlotticoTrack.checkSend, pt.pt_checkInterval);
+                    // TODO: send crash report
                     return;
                 }
                 setTimeout(PlotticoTrack.checkSend, pt.pt_waitInterval);
@@ -346,14 +355,15 @@ PlotticoTrack.checkSend = function() {
             location.reload();
         }
         else {
-            console.log("Old: " + pt.pt_oldData + " New: " + normalizedData);
+            // console.log("Old: " + pt.pt_oldData + " New: " + normalizedData);
             pt.pt_oldData = normalizedData;
             pt.sendToPlot(normalizedData, pt.pt_Hash);
             PlotticoTrack.bdataSent = true; // TODO: we set this to always be true; switch to XHR!
             // the problem is that plottico will not return a value if there are no viewers
             // thus the image will never be loaded, and bdataSent not true
+            PlotticoTrack.pt_retry=0;
             setTimeout(PlotticoTrack.checkSend, pt.pt_checkInterval);
-            console.log("Will do next check in " + pt.pt_checkInterval + "ms");
+            // console.log("Will do next check in " + pt.pt_checkInterval + "ms");
         }
     }
     else {}
@@ -369,7 +379,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
         page: PlotticoTrack.pt_trackedSite
     }); // hope it will complete before we stop and exit...
 
-    console.log("Meaasge action");
+    // console.log("Meaasge action");
     document.getElementById("plotticotrack_message").style.visibility = "visible";
     var sheet = window.document.styleSheets[0];
     var ruleNum = 0;
@@ -404,7 +414,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             e.stopPropagation();
             var charIndex = getCaretCharacterOffsetWithin(e.target);
             var xpath = PlotticoTrack.createSelector(e.target);
-            var targetText = e.target.innerHTML;
+            var targetText = e.target.textContent;
             var trackables = PlotticoTrack.parseTrackableValues(targetText);
             var trackablesIndex = PlotticoTrack.parseTrackableIndex(targetText);
             var min_diff = 99999999;
@@ -509,10 +519,11 @@ load_list(function(l) {
         }
     }
     if(i == l.length){
-        console.log("Site not found! href=" + location.href );
+        // console.log("Site not found! href=" + location.href );
     }
 });
 
+// http://stackoverflow.com/a/4812022/2659616
 function getCaretCharacterOffsetWithin(element) {
     var caretOffset = 0;
     var doc = element.ownerDocument || element.document;
@@ -572,11 +583,16 @@ PlotticoTrack.playOne = function() {
     }
     console.log("Trying to perform action " + rec.type + " on element " + rec.info.selector);
     var el = document.querySelector(rec.info.selector);
-    if (!el) console.log("  --- element not found!");
+    if (!el) {
+        console.log("  --- element not found!");
+        PlotticoTrack.pt_retry_action++;
+        if(PlotticoTrack.pt_retry_action < 10) return;
+    }
     if (el && rec.type == TestRecorder.EventTypes.Click) {
         console.log("Executing click!");
         el.dispatchEvent(new Event("click"));
     }
+    PlotticoTrack.pt_retry_action = 0;
     PlotticoTrack.pt_recIndex++;
 };
 
@@ -601,14 +617,14 @@ PlotticoTrack.saveValues = function(trackedInfo) {
 };
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log("Meaasge!" + request.action);
+    // console.log("Meaasge!" + request.action);
     if (request.action == "select") {
         console.log("unsupported");
 
         sendResponse({});
     }
     if (request.action == "checkUrl") {
-        console.log("Someone requrested answer "+request.my_hash+" my hash "+PlotticoTrack.my_hash);
+        // console.log("Someone requrested answer "+request.my_hash+" my hash "+PlotticoTrack.my_hash);
         if(PlotticoTrack.pt_working && PlotticoTrack.pt_trackedSite == request.checkUrl) {
             if(request.my_hash != PlotticoTrack.my_hash) {
                 console.log("answering him!");
@@ -617,7 +633,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         }
     }
         if(request && "working" in request) {
-            console.log("Someone is already working on "+PlotticoTrack.pt_trackedSite+" not starting");
+            // console.log("Someone is already working on "+PlotticoTrack.pt_trackedSite+" not starting");
             clearTimeout(PlotticoTrack.initall);
             if(PlotticoTrack.pt_recStarted) recorder.stop();
             if(PlotticoTrack.pt_working) {
