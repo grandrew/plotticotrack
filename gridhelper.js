@@ -43,7 +43,7 @@ function list2object(l) {
     var ob = {};
     var i;
     for(i=0; i<l.length;i++) {
-        ob[i] = LZString.compress(JSON.stringify(l[i]));
+        ob[i] = LZString.compressToUTF16(JSON.stringify(l[i]));
     }
     ob["total"] = i;
     return ob;
@@ -52,10 +52,10 @@ function list2object(l) {
 function object2list(ob) {
     var l=[];
     for(var o in ob) {
-        l[o] = JSON.parse(LZString.decompress(ob[o]));
+        l[o] = JSON.parse(LZString.decompressFromUTF16(ob[o]));
         if(!l[o]) {
             console.log("Can not decompress");
-            console.log(ob[o]); 
+            console.log(ob[o]);
         }
     }
     return l;

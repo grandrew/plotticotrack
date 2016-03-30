@@ -305,6 +305,9 @@ PlotticoTrack.insertPanel = function() {
             var inject  = document.createElement("div");
             inject.innerHTML = xmlHttp.responseText;
             document.body.appendChild(inject);
+            document.body.style.overflow = "visible";
+            document.body.style.overflowY = "visible";
+            document.body.style.overflowX = "visible";
             if("pt_working" in PlotticoTrack) {
                 document.getElementById("plotticotrack_work").style.visibility = "visible";
             }
@@ -496,7 +499,7 @@ load_list(function(l) {
                             document.getElementById("plotticotrack_work").style.visibility = "visible";
                         }
                         PlotticoTrack.pt_working = true;
-                    }    
+                    }
                 }, 250);
                 chrome.runtime.sendMessage({"action": "checkUrl", "checkUrl": PlotticoTrack.pt_trackedSite, my_hash: PlotticoTrack.my_hash }, function(response) {
                     
