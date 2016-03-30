@@ -1,4 +1,5 @@
 var testcase_items = [];
+var tracked_tabs = {};
 var active = false;
 var empty = true;
 var tab_id = null;
@@ -64,7 +65,17 @@ chrome.windows.onCreated.addListener(function (window) {
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 //  console.log(request);
+    if(request.action == "checkTab") {
+        console.log("Requiest from tab: "+sender.tab.id);
+          if (sender.tab.id in tracked_tabs) {
+              console.log("doing init request");
+              chrome.tabs.sendMessage(sender.tab.id, {"action": "init", "url": tracked_tabs[sender.tab.id] });
+          } else {
+              console.log("requrest to init not authorized");
+          }
+    }
   if (request.action == "checkUrl") {
+      
       chrome.tabs.query({}, function(tabs) {
           tabs.forEach(function(tab) {
               chrome.tabs.sendMessage(tab.id, request, function(r) {
@@ -72,7 +83,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                   if(r && "working" in r) {
                         // console.log("SEND CheckUrl Response: "+r);
                       chrome.tabs.sendMessage(sender.tab.id, r);
-                  }
+                  } 
                  });
           });
       });
@@ -124,5 +135,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             }
         }
     });
+  }
+  if(request.action == "setTrackedTab") {
+      console.log("Tracking tab "+request.tabId);
+      tracked_tabs[request.tabId] = request.url; // TODO: do we ever need to remove old tabs?
   }
 });

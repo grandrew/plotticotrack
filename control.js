@@ -32,8 +32,15 @@ window.onload = function(){
                             var url = w2ui.grid.get(sel[i]).url;
                             // var win = window.open(url, '_blank');
                             chrome.tabs.create({
-                                url: url
-                            });
+                                url: url,
+                                active: false
+                            }, function (tab) { 
+                                // notify bg that we launched a tab with url
+                                console.log("Will now track tab "+tab.id);
+                                chrome.runtime.sendMessage({"action": "setTrackedTab", "url": url, "tabId": tab.id }, function(response) {});
+                                chrome.tabs.update(tab.id, {active: true});
+                                window.close();
+                            } );
                         }
                         // win.focus();
                     }
@@ -44,7 +51,8 @@ window.onload = function(){
                             var url = "https://plotti.co/"+w2ui.grid.get(sel[i]).phash;
                             // var win = window.open(url, '_blank');
                             chrome.tabs.create({
-                                url: url
+                                url: url,
+                                
                             });
                         }
                         // win.focus();
