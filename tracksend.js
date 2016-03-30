@@ -5,6 +5,7 @@ var PlotticoTrack;
 if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack = {};
     PlotticoTrack.pt_retry = 0;
+    PlotticoTrack.my_hash = Math.random();
 }
 
 function get_vals(objects) {
@@ -448,54 +449,12 @@ chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
     }
 });
 
-// chrome.storage.sync.get({
-//     "url": "",
-//     "hash": "",
-//     "nindex": -1,
-//     "xpath": "",
-//     "interval": 5000,
-//     "recording": null
-// }, function(v) {
-//     PlotticoTrack.pt_trackedSite = v["url"];
-//     PlotticoTrack.pt_Hash = v["hash"];
-//     PlotticoTrack.pt_NumberIndex = v["nindex"];
-//     PlotticoTrack.pt_XPath = v["xpath"];
-//     PlotticoTrack.pt_oldData = false;
-//     PlotticoTrack.pt_checkInterval = v["interval"]; // tracking interval
-//     PlotticoTrack.pt_waitInterval = 700; // intervals to check for value while waiting
-//     PlotticoTrack.pt_recIndex = 0;
-//     PlotticoTrack.pt_recording = v.recording;
-//     //console.log("local data "+get_vals(PlotticoTrack));
-//     if (PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
-//         console.log("Site found! Launching");
-//         PlotticoTrack.insertPanel();
-//         if (!PlotticoTrack.pt_XPath) {
-//             console.log("No xpath! Trying recording session");
-//             if (PlotticoTrack.pt_recording) {
-//                 console.log("Recording exists! Not starting recorer");
-//             }
-//             else {
-//                 console.log("starting recorer");
-//                 recorder.start();
-//                 PlotticoTrack.pt_recStarted = true;
-//             }
-//         }
-//         else {
-//             PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
-//         }
-//     }
-//     else {
-//         console.log("Site not found! href=" + location.href + " but we are tracking " + PlotticoTrack.pt_trackedSite);
-//     }
-// });
 
-chrome.storage.sync.get({
-    "tracklist": []
-}, function(l) {
+load_list(function(l) {
     var i;
-    for(i=0;i<l.tracklist.length;i++){
-        if(l.tracklist[i].url == location.href) {
-            var v = l.tracklist[i];
+    for(i=0;i<l.length;i++){
+        if(l[i].url == location.href) {
+            var v = l[i];
             PlotticoTrack.pt_trackedSite = v["url"];
             PlotticoTrack.pt_Hash = v["phash"];
             if(v.nrindex && typeof(v.nrindex) == "string") PlotticoTrack.pt_NumberIndex = v["nrindex"].split(";");
@@ -510,36 +469,43 @@ chrome.storage.sync.get({
             PlotticoTrack.pt_recIndex = 0;
             PlotticoTrack.pt_recording = v.script;
             //console.log("local data "+get_vals(PlotticoTrack));
+            // init procedure
             if (PlotticoTrack.pt_trackedSite && location.href == PlotticoTrack.pt_trackedSite) {
-                console.log("Site found! Launching");
-                PlotticoTrack.insertPanel();
-                if (!PlotticoTrack.pt_XPath.length) {
-                    console.log("No xpath! Trying recording session");
-                    document.addEventListener("pt_blueclick", function(){PlotticoTrack.selectElement(0, "pt_blueline");}, false);
-                    document.addEventListener("pt_redclick", function(){PlotticoTrack.selectElement(1, "pt_redline");}, false);
-                    document.addEventListener("pt_yellowclick", function(){PlotticoTrack.selectElement(2, "pt_yellowline");}, false);
-                    // TODO HERE: what to do when stating?
-                    document.addEventListener("pt_startclick", function(){window.location.href = PlotticoTrack.pt_trackedSite; location.reload();}, false);
-                    if (PlotticoTrack.pt_recording) {
-                        console.log("Recording exists! Not starting recorer");
-                    }
-                    else {
-                        console.log("starting recorer");
-                        recorder.start();
-                        PlotticoTrack.pt_recStarted = true;
-                    }
-                } else {
-                    PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
-                    if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
-                        document.getElementById("plotticotrack_work").style.visibility = "visible";
-                    }
-                    PlotticoTrack.pt_working = true;
-                }
+                // now check that no one is respoinding to this url already
+                PlotticoTrack.initall = setTimeout(function (){
+                    console.log("Site found! Launching");
+                    PlotticoTrack.insertPanel();
+                    if (!PlotticoTrack.pt_XPath.length) {
+                        console.log("No xpath! Trying recording session");
+                        document.addEventListener("pt_blueclick", function(){PlotticoTrack.selectElement(0, "pt_blueline");}, false);
+                        document.addEventListener("pt_redclick", function(){PlotticoTrack.selectElement(1, "pt_redline");}, false);
+                        document.addEventListener("pt_yellowclick", function(){PlotticoTrack.selectElement(2, "pt_yellowline");}, false);
+                        // TODO HERE: what to do when stating?
+                        document.addEventListener("pt_startclick", function(){window.location.href = PlotticoTrack.pt_trackedSite; location.reload();}, false);
+                        if (PlotticoTrack.pt_recording) {
+                            console.log("Recording exists! Not starting recorer");
+                        }
+                        else {
+                            console.log("starting recorer");
+                            recorder.start();
+                            PlotticoTrack.pt_recStarted = true;
+                        }
+                    } else {
+                        PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval);
+                        if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
+                            document.getElementById("plotticotrack_work").style.visibility = "visible";
+                        }
+                        PlotticoTrack.pt_working = true;
+                    }    
+                }, 250);
+                chrome.runtime.sendMessage({"action": "checkUrl", "checkUrl": PlotticoTrack.pt_trackedSite, my_hash: PlotticoTrack.my_hash }, function(response) {
+                    
+                });
             }
             break;
         }
     }
-    if(i == l.tracklist.length){
+    if(i == l.length){
         console.log("Site not found! href=" + location.href );
     }
 });
@@ -612,18 +578,15 @@ PlotticoTrack.playOne = function() {
 };
 
 PlotticoTrack.saveValues = function(trackedInfo) {
-    chrome.storage.sync.get({"tracklist": []}, function(l) {
+    load_list(function(l) {
         var i;
-        for(i=0;i<l.tracklist.length;i++){
-            if(l.tracklist[i].url == location.href) {
-                var v = l.tracklist[i];
+        for(i=0;i<l.length;i++){
+            if(l[i].url == location.href) {
+                var v = l[i];
                 v.nrindex = trackedInfo.nindex;
                 v.selector = trackedInfo.xpath;
                 v.rdy = true;
-                chrome.storage.sync.set({ "tracklist": l.tracklist }, function() {
-                    // Notify that we saved.
-                    console.log("set values");
-                });
+                save_list(l);
                 return;
             }
         }
@@ -636,6 +599,28 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         console.log("unsupported");
 
         sendResponse({});
+    }
+    if (request.action == "checkUrl") {
+        console.log("Someone requrested answer "+request.my_hash+" my hash "+PlotticoTrack.my_hash);
+        if(PlotticoTrack.pt_working && PlotticoTrack.pt_trackedSite == request.checkUrl) {
+            if(request.my_hash != PlotticoTrack.my_hash) {
+                console.log("answering him!");
+                sendResponse({"working": PlotticoTrack.pt_working});
+            }
+        }
+    }
+        if(request && "working" in request) {
+            console.log("Someone is already working on "+PlotticoTrack.pt_trackedSite+" not starting");
+            clearTimeout(PlotticoTrack.initall);
+            if(PlotticoTrack.pt_recStarted) recorder.stop();
+            if(PlotticoTrack.pt_working) {
+                document.getElementById("plotticotrack_full_panel").style.display = "none";
+                var bodyStyle = document.body.style;
+                var cssTransform = 'transform' in bodyStyle ? 'transform' : 'webkitTransform';
+                bodyStyle[cssTransform] = 'translateY(0px)';
+                PlotticoTrack.pt_working = false;
+                clearTimeout(PlotticoTrack.pt_checkTimer);
+                }
     }
     if (request.action == "play") {
         if (PlotticoTrack.pt_recStarted) {

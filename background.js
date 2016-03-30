@@ -2,7 +2,7 @@ var testcase_items = [];
 var active = false;
 var empty = true;
 var tab_id = null;
-
+/*global chrome*/
 /**
  * Listens for the app launching, then creates the window.
  *
@@ -19,7 +19,7 @@ var tab_id = null;
 //     }
 //   );
 // });
-EventTypes = {};
+var EventTypes = {};
 EventTypes.OpenUrl = 0;
 EventTypes.Click = 1;
 EventTypes.Change = 2;
@@ -64,6 +64,19 @@ chrome.windows.onCreated.addListener(function (window) {
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   console.log(request);
+  if (request.action == "checkUrl") {
+      chrome.tabs.query({}, function(tabs) {
+          tabs.forEach(function(tab) {
+              chrome.tabs.sendMessage(tab.id, request, function(r) {
+                  console.log("CheckUrl Response: "+r);
+                  if(r && "working" in r) {
+                        console.log("SEND CheckUrl Response: "+r);
+                      chrome.tabs.sendMessage(sender.tab.id, r);
+                  }
+                 });
+          });
+      });
+  }
   if (request.action == "append") {
     if(request.obj.type != EventTypes.Click) return;
     testcase_items[testcase_items.length] = request.obj;
@@ -100,16 +113,13 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	sendResponse({'items': testcase_items});
   }
   if (request.action == "saveRecording") {
-    chrome.storage.sync.get({"tracklist": []}, function(l) {
+    load_list(function(l) {
         var i;
-        for(i=0;i<l.tracklist.length;i++){
-            if(l.tracklist[i].url == request.page) {
-                var v = l.tracklist[i];
+        for(i=0;i<l.length;i++){
+            if(l[i].url == request.page) {
+                var v = l[i];
                 v.script = testcase_items;
-                chrome.storage.sync.set({ "tracklist": l.tracklist }, function() {
-                    // Notify that we saved.
-                    console.log("set values");
-                });
+                save_list(l);
                 return;
             }
         }

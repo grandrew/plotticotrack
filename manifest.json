@@ -7,11 +7,13 @@
   "minimum_chrome_version": "38",
 
   "icons": {
-    "128": "assets/icon_128.png"
+    "128": "assets/icon_128.png",
+    "48": "assets/icon_48.png",
+    "16": "assets/icon_16.png"
   },
 
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["lz-string.js", "gridhelper.js", "background.js"]
   },
   "browser_action": {
     "default_icon": "assets/icon_128.png",
@@ -29,7 +31,7 @@
   ],
   "content_scripts": [{
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["recorder.js", "tracksend.js"]
+        "js": ["recorder.js", "gridhelper.js", "lz-string.js", "tracksend.js"]
   }],
   "offline_enabled": true,
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"

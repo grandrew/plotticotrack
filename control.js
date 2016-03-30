@@ -1,4 +1,4 @@
-/*global makeid,chrome, MutationObserver, vulcanise_inlines, w2ui*/
+/*global makeid,chrome, MutationObserver, vulcanise_inlines, w2ui, tl2o, o2tl, load_list, save_list*/
 window.onload = function(){
  
     $(function () {
@@ -119,22 +119,18 @@ window.onload = function(){
                 }
             }
             w2ui.grid.mergeChanges(); // TODO: make use of red dot? - delete "yes" fiesd?
-            chrome.storage.sync.set({"tracklist": w2ui.grid.records}, function() {
-                console.log("set values");
-            });
+            save_list(w2ui.grid.records);
         };
     });
     w2ui.grid.on('delete', function(event) {
         event.onComplete = function() {
             w2ui.grid.mergeChanges();
-            chrome.storage.sync.set({"tracklist": w2ui.grid.records}, function() {
-                console.log("set values");
-            });
+            save_list(w2ui.grid.records);
         };
     });
     
-    chrome.storage.sync.get({"tracklist": []},function(v){
-        w2ui.grid.records = v.tracklist;
+    load_list(function(l){
+        w2ui.grid.records = l;
         w2ui.grid.refresh();
     });
     

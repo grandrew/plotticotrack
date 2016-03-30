@@ -1,4 +1,4 @@
-/*global jsSHA*/
+/*global chrome*/
 
 var events = ["onclick", "onmouseover", "onmouseout", "onmousedown", "onmouseup", "onscroll", "oncontextmenu", "onmousewheel", "ondblclick"];
 
@@ -37,4 +37,41 @@ function makeid()
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
+}
+
+function list2object(l) {
+    var ob = {};
+    var i;
+    for(i=0; i<l.length;i++) {
+        ob[i] = LZString.compress(JSON.stringify(l[i]));
+    }
+    ob["total"] = i;
+    return ob;
+}
+
+function object2list(ob) {
+    var l=[];
+    for(var o in ob) {
+        l[o] = JSON.parse(LZString.decompress(ob[o]));
+    }
+    return l;
+}
+
+function save_list(l) {
+    var ob = list2object(l);
+    chrome.storage.sync.set(ob, function() {
+        //console.log("set values");
+    });
+}
+
+function load_list(cb) {
+    chrome.storage.sync.get({"total": 0},function(v){
+        var getob={};
+        for(var i=0;i<v.total;i++) {
+            getob[i] = {};
+        }
+        chrome.storage.sync.get(getob, function(v){
+            cb(object2list(v));
+        });
+    });
 }
