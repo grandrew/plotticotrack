@@ -53,6 +53,10 @@ function object2list(ob) {
     var l=[];
     for(var o in ob) {
         l[o] = JSON.parse(LZString.decompress(ob[o]));
+        if(!l[o]) {
+            console.log("Can not decompress");
+            console.log(ob[o]); 
+        }
     }
     return l;
 }

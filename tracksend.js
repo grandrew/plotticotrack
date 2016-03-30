@@ -581,6 +581,10 @@ PlotticoTrack.saveValues = function(trackedInfo) {
     load_list(function(l) {
         var i;
         for(i=0;i<l.length;i++){
+            if(!l[i]) {
+                console.log("Warning! list "+i+" is "+l[i]);
+                continue;
+            }
             if(l[i].url == location.href) {
                 var v = l[i];
                 v.nrindex = trackedInfo.nindex;
