@@ -822,6 +822,12 @@ TestRecorder.Recorder.prototype.start = function() {
         var overloadStopPropagation = Event.prototype.stopPropagation;
         Event.prototype.stopPropagation = function(){
             console.log(this);
+            if(this.type == "click") {
+                console.log(this.target);
+                var e = { detail: { target: this.target }};
+                console.log(e);
+                document.dispatchEvent((new CustomEvent('pt_preventClick', e)));
+            }
             overloadStopPropagation.apply(this, arguments);
         };
     } + ')();';

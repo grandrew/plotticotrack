@@ -34,7 +34,8 @@ window.onload = function(){
                             // var win = window.open(url, '_blank');
                             chrome.tabs.create({
                                 url: url,
-                                active: false
+                                active: false,
+                                pinned: true
                             }, function (tab) { 
                                 // notify bg that we launched a tab with url
                                 console.log("Will now track tab "+tab.id);
