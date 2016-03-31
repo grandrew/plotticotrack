@@ -374,6 +374,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     if (PlotticoTrack.pt_recStarted) {
         PlotticoTrack.pt_recStarted = false;
         recorder.stop();
+        document.getElementById("pt_recording").innerHTML = "";
     }
     chrome.runtime.sendMessage({
         action: "saveRecording",
@@ -502,6 +503,7 @@ PlotticoTrack.initTracker = function(v) {
             else {
                 console.log("starting recorer");
                 recorder.start();
+                document.getElementById("pt_recording").innerHTML = "recording";
                 PlotticoTrack.pt_recStarted = true;
             }
         } else {
@@ -654,6 +656,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action == "play") {
         if (PlotticoTrack.pt_recStarted) {
             recorder.stop();
+            document.getElementById("pt_recording").innerHTML = "";
             PlotticoTrack.pt_recStarted = false;
         }
         console.log("Loading recording for play");

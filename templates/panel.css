@@ -794,3 +794,13 @@ div.project-info:after {
 .pl_src0 { color: #5DA5DA; /* (blue) */   }
 .pl_src1 { color: #F15854; /* (red) */    }
 .pl_src2 { color: #DECF3F; /* (yellow) */ }
+
+.blink {
+  animation: blink-animation 1s steps(5, start) infinite;
+  color: red;
+}
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
