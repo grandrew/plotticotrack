@@ -660,7 +660,6 @@ PlotticoTrack.saveValues = function(trackedInfo) {
                 var v = l[i];
                 v.nrindex = trackedInfo.nindex;
                 v.selector = trackedInfo.xpath;
-                v.rdy = true;
                 save_list(l);
                 return;
             }
