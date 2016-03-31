@@ -4,6 +4,7 @@
 var PlotticoTrack;
 if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack = {};
+    PlotticoTrack.pt_recId = -1; // current record ID
     PlotticoTrack.pt_retry = 0;
     PlotticoTrack.pt_retry_action = 0;
     PlotticoTrack.my_hash = Math.random();
@@ -376,7 +377,8 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     }
     chrome.runtime.sendMessage({
         action: "saveRecording",
-        page: PlotticoTrack.pt_trackedSite
+        page: PlotticoTrack.pt_trackedSite,
+        recid: PlotticoTrack.pt_recId
     }); // hope it will complete before we stop and exit...
 
     // console.log("Meaasge action");
@@ -468,6 +470,7 @@ PlotticoTrack.initTracker = function(v) {
         return; // already init
     }
     PlotticoTrack.pt_trackedSite = v["url"];
+    PlotticoTrack.pt_recId = v.recid;
     PlotticoTrack.pt_Hash = v["phash"];
     if(v.nrindex && typeof(v.nrindex) == "string") PlotticoTrack.pt_NumberIndex = v["nrindex"].split(";");
     else PlotticoTrack.pt_NumberIndex = [];
@@ -509,22 +512,22 @@ PlotticoTrack.initTracker = function(v) {
             PlotticoTrack.pt_working = true;
         }
     }, 250);
-    chrome.runtime.sendMessage({"action": "checkUrl", "checkUrl": PlotticoTrack.pt_trackedSite, my_hash: PlotticoTrack.my_hash }, function(response) {});
+    // chrome.runtime.sendMessage({"action": "checkUrl", "checkUrl": PlotticoTrack.pt_trackedSite, my_hash: PlotticoTrack.my_hash }, function(response) {});
 }
 
-load_list(function(l) { // TODO: deprecate this method in favour of "init" message?
-    var i;
-    for(i=0;i<l.length;i++){
-        if(l[i].url == location.href) {
-            PlotticoTrack.initTracker(l[i]);
-            break;
-        }
-    }
-    if(i == l.length){
-        // console.log("Site not found! href=" + location.href );
-    }
-    chrome.runtime.sendMessage({"action": "checkTab"}, function(response) {});
-});
+// load_list(function(l) { // TODO: deprecate this method in favour of "init" message?
+//     var i;
+//     for(i=0;i<l.length;i++){
+//         if(l[i].url == location.href) {
+//             PlotticoTrack.initTracker(l[i]);
+//             break;
+//         }
+//     }
+//     if(i == l.length){
+//         // console.log("Site not found! href=" + location.href );
+//     }
+// });
+chrome.runtime.sendMessage({"action": "checkTab"}, function(response) {});
 
 // http://stackoverflow.com/a/4812022/2659616
 function getCaretCharacterOffsetWithin(element) {
@@ -626,28 +629,28 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
         sendResponse({});
     }
-    if (request.action == "checkUrl") {
-        // console.log("Someone requrested answer "+request.my_hash+" my hash "+PlotticoTrack.my_hash);
-        if(PlotticoTrack.pt_working && PlotticoTrack.pt_trackedSite == request.checkUrl) {
-            if(request.my_hash != PlotticoTrack.my_hash) {
-                console.log("answering him!");
-                sendResponse({"working": PlotticoTrack.pt_working});
-            }
-        }
-    }
-        if(request && "working" in request) {
-            // console.log("Someone is already working on "+PlotticoTrack.pt_trackedSite+" not starting");
-            clearTimeout(PlotticoTrack.initall);
-            if(PlotticoTrack.pt_recStarted) recorder.stop();
-            if(PlotticoTrack.pt_working) {
-                document.getElementById("plotticotrack_full_panel").style.display = "none";
-                var bodyStyle = document.body.style;
-                var cssTransform = 'transform' in bodyStyle ? 'transform' : 'webkitTransform';
-                bodyStyle[cssTransform] = 'translateY(0px)';
-                PlotticoTrack.pt_working = false;
-                clearTimeout(PlotticoTrack.pt_checkTimer);
-                }
-    }
+    // if (request.action == "checkUrl") {
+    //     // console.log("Someone requrested answer "+request.my_hash+" my hash "+PlotticoTrack.my_hash);
+    //     if(PlotticoTrack.pt_working && PlotticoTrack.pt_trackedSite == request.checkUrl) {
+    //         if(request.my_hash != PlotticoTrack.my_hash) {
+    //             console.log("answering him!");
+    //             sendResponse({"working": PlotticoTrack.pt_working});
+    //         }
+    //     }
+    // }
+    //     if(request && "working" in request) {
+    //         // console.log("Someone is already working on "+PlotticoTrack.pt_trackedSite+" not starting");
+    //         clearTimeout(PlotticoTrack.initall);
+    //         if(PlotticoTrack.pt_recStarted) recorder.stop();
+    //         if(PlotticoTrack.pt_working) {
+    //             document.getElementById("plotticotrack_full_panel").style.display = "none";
+    //             var bodyStyle = document.body.style;
+    //             var cssTransform = 'transform' in bodyStyle ? 'transform' : 'webkitTransform';
+    //             bodyStyle[cssTransform] = 'translateY(0px)';
+    //             PlotticoTrack.pt_working = false;
+    //             clearTimeout(PlotticoTrack.pt_checkTimer);
+    //             }
+    // }
     if (request.action == "play") {
         if (PlotticoTrack.pt_recStarted) {
             recorder.stop();
@@ -667,19 +670,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             PlotticoTrack.playRecording();
         })
     }
-    if (request.action == "ping") {
-        if ("pt_trackedSite" in PlotticoTrack && location.href == PlotticoTrack.pt_trackedSite) {
-            sendResponse({
-                "ping": "pong"
-            });
-        }
-    }
     if(request.action == "init") {
-        console.log("init by request. url: "+request.url);
+        console.log("init by request. url: "+request.url+" recid " + request.recid);
         load_list(function(l) {
             var i;
             for(i=0;i<l.length;i++){
-                if(l[i].url == request.url) {
+                if(l[i].recid == request.recid) {
                     console.log("launching initTracker()");
                     PlotticoTrack.initTracker(l[i]);
                     break;
@@ -687,5 +683,4 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             }
         });
     }
-
 });

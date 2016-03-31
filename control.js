@@ -30,6 +30,7 @@ window.onload = function(){
                         for(var i=0;i<sel.length;i++) {
                             //console.log("will open" + w2ui.grid.get(sel[i]).url);
                             var url = w2ui.grid.get(sel[i]).url;
+                            var recid = w2ui.grid.get(sel[i]).recid;
                             // var win = window.open(url, '_blank');
                             chrome.tabs.create({
                                 url: url,
@@ -37,7 +38,7 @@ window.onload = function(){
                             }, function (tab) { 
                                 // notify bg that we launched a tab with url
                                 console.log("Will now track tab "+tab.id);
-                                chrome.runtime.sendMessage({"action": "setTrackedTab", "url": url, "tabId": tab.id }, function(response) {});
+                                chrome.runtime.sendMessage({"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid }, function(response) {});
                                 chrome.tabs.update(tab.id, {active: true});
                                 window.close();
                             } );

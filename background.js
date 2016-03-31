@@ -65,29 +65,21 @@ chrome.windows.onCreated.addListener(function (window) {
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 //  console.log(request);
-    if(request.action == "checkTab") {
-        console.log("Requiest from tab: "+sender.tab.id);
-          if (sender.tab.id in tracked_tabs) {
-              console.log("doing init request");
-              chrome.tabs.sendMessage(sender.tab.id, {"action": "init", "url": tracked_tabs[sender.tab.id] });
-          } else {
-              console.log("requrest to init not authorized");
-          }
-    }
-  if (request.action == "checkUrl") {
+    
+//   if (request.action == "checkUrl") { // deprecated
       
-      chrome.tabs.query({}, function(tabs) {
-          tabs.forEach(function(tab) {
-              chrome.tabs.sendMessage(tab.id, request, function(r) {
-                //   console.log("CheckUrl Response: "+r);
-                  if(r && "working" in r) {
-                        // console.log("SEND CheckUrl Response: "+r);
-                      chrome.tabs.sendMessage(sender.tab.id, r);
-                  } 
-                 });
-          });
-      });
-  }
+//       chrome.tabs.query({}, function(tabs) {
+//           tabs.forEach(function(tab) {
+//               chrome.tabs.sendMessage(tab.id, request, function(r) {
+//                 //   console.log("CheckUrl Response: "+r);
+//                   if(r && "working" in r) {
+//                         // console.log("SEND CheckUrl Response: "+r);
+//                       chrome.tabs.sendMessage(sender.tab.id, r);
+//                   } 
+//                  });
+//           });
+//       });
+//   }
   if (request.action == "append") {
     if(request.obj.type != EventTypes.Click) return;
     testcase_items[testcase_items.length] = request.obj;
@@ -127,7 +119,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     load_list(function(l) {
         var i;
         for(i=0;i<l.length;i++){
-            if(l[i].url == request.page) {
+            if(l[i].recid == request.recid) {
                 var v = l[i];
                 v.script = testcase_items;
                 save_list(l);
@@ -136,8 +128,19 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         }
     });
   }
-  if(request.action == "setTrackedTab") {
-      console.log("Tracking tab "+request.tabId);
-      tracked_tabs[request.tabId] = request.url; // TODO: do we ever need to remove old tabs?
-  }
+    if (request.action == "setTrackedTab") {
+        console.log("Tracking tab " + request.tabId);
+        tracked_tabs[request.tabId] = request; // TODO: do we ever need to remove old tabs?
+    }
+    if (request.action == "checkTab") {
+        console.log("Request from tab: " + sender.tab.id);
+        if (sender.tab.id in tracked_tabs) {
+            console.log("doing init request");
+            tracked_tabs[sender.tab.id].action = "init";
+            chrome.tabs.sendMessage(sender.tab.id, tracked_tabs[sender.tab.id]);
+        }
+        else {
+            console.log("requrest to init not authorized");
+        }
+    }
 });
