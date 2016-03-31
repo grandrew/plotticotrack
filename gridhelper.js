@@ -80,16 +80,20 @@ function load_list(cb) {
     });
 }
 
-function start_tab(url, recid) {
+function start_tab(url, recid, cb) {
     chrome.tabs.create({
         url: url,
         active: false,
         pinned: true
-    }, function (tab) { 
+    }, function (tab) {
         // notify bg that we launched a tab with url
         console.log("Will now track tab "+tab.id);
-        chrome.runtime.sendMessage({"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid }, function(response) {});
+        if(typeof(tracked_tabs) != "undefined") {
+            tracked_tabs[tab.id] = {"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid };
+        }
+        chrome.runtime.sendMessage(tracked_tabs[tab.id], function(response) {});
         chrome.tabs.update(tab.id, {active: true});
-        window.close();
+        // chrome.tabs.sendMessage(tab.id, {"action": "init", "url": url, "tabId": tab.id, "recid": recid });
+        if(typeof(cb) != "undefined") cb();
     } );
 }

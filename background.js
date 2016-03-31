@@ -75,7 +75,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 //                   if(r && "working" in r) {
 //                         // console.log("SEND CheckUrl Response: "+r);
 //                       chrome.tabs.sendMessage(sender.tab.id, r);
-//                   } 
+//                   }
 //                  });
 //           });
 //       });
@@ -145,12 +145,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
 });
 
-load_list(function(l) {
-    var i;
-    for(i=0;i<l.length;i++){
-        if(l[i].autostart) {
-            start_tab(l[i].url, l[i].recid);
+chrome.windows.onCreated.addListener(function() {
+    chrome.windows.getAll(function(windows) {
+        console.log("windows amt: "+windows.length);
+        if (windows.length == 1) {
+            load_list(function(l) {
+                var i;
+                for(i=0;i<l.length;i++){
+                    if(l[i].autostart) {
+                        start_tab(l[i].url, l[i].recid);
+                    }
+                }
+            });
         }
-    }
+    });
 });
 
+
+// chrome.runtime.getPlatformInfo(function(info) {
+//     // Display host OS in the console
+//     console.log(info.os); // watch for cros
+// });

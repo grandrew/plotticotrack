@@ -32,7 +32,9 @@ window.onload = function(){
                             var url = w2ui.grid.get(sel[i]).url;
                             var recid = w2ui.grid.get(sel[i]).recid;
                             // var win = window.open(url, '_blank');
-                            start_tab(url, recid);
+                            start_tab(url, recid, function() {
+                                window.close();
+                            });
                         }
                         // win.focus();
                     }
