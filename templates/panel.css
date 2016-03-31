@@ -14,7 +14,9 @@ button.minimal {
   padding: 8px 0 9px;
   text-align: center;
   text-shadow: 0 1px 0 #fff;
-  width: 150px; }
+  width: 150px; 
+  height: auto;
+  }
   button.minimal:hover {
     background: #d9d9d9;
     -webkit-box-shadow: inset 0 0 1px 1px #eaeaea;
@@ -402,7 +404,9 @@ button[disabled].download-itunes:active {
   box-shadow: none;
   color: #8f8f8f;
   cursor: not-allowed;
-  text-shadow: 0 -1px 1px #ebebeb; }
+  text-shadow: 0 -1px 1px #ebebeb;
+  height: auto;
+  }
 
 button.download-itunes::-moz-focus-inner {
   border: 0;
@@ -558,10 +562,8 @@ button.webkit-check {
   button.webkit-check:active {
     background: -webkit-gradient(linear, 0 0, 0 100%, color-stop(0, #5c78b5), color-stop(1, #1b4bab)); }
 
-/* disabled button styles
-   works with this markup: <button disabled="disabled">Submit</button>
-*******************************************************************************/
-button[disabled],
+button[disabled].minimal,
+button[disabled].cupid-green,
 button[disabled]:hover,
 button[disabled]:active {
   background: #999;
@@ -570,178 +572,10 @@ button[disabled]:active {
   box-shadow: none;
   color: #aaa;
   cursor: not-allowed;
-  text-shadow: none; }
+  text-shadow: none; 
+  height: auto;
+  }
 
-/* Style the example page.
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend, button,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 100%;
-  font: inherit;
-  vertical-align: baseline; }
-article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section {
-  display: block; }
-
-body {
-  line-height: 1; }
-
-ol, ul {
-  list-style: none; }
-
-blockquote, q {
-  quotes: none; }
-
-blockquote:before, blockquote:after,
-q:before, q:after {
-  content: '';
-  content: none; }
-
-table {
-  border-collapse: collapse;
-  border-spacing: 0; }
-
-body {
-  background: #fff;
-  color: #333;
-  font-family: "helvetica neue", helvetica, arial, sans-serif; }
-
-div.container {
-  margin: 40px auto;
-  width: 960px; }
-
-h1 {
-  color: #333;
-  font-size: 34px;
-  font-weight: 700;
-  margin: 24px 0 12px 0; }
-
-div.project-info div.description {
-  float: left;
-  width: 490px; }
-div.project-info div.info {
-  float: left;
-  margin: 0 0 0 30px;
-  width: 340px; }
-  div.project-info div.info ul {
-    position: relative;
-    top: 1px; }
-    div.project-info div.info ul li {
-      color: #444;
-      font-size: 11px;
-      font-weight: normal;
-      line-height: 18px;
-      text-transform: uppercase; }
-      div.project-info div.info ul li a:hover {
-        border-bottom: 1px solid #444; }
-      div.project-info div.info ul li:before {
-        content: "\00d7";
-        font-size: 15px;
-        font-weight: 700;
-        left: -2px;
-        position: relative;
-        top: 0; }
-
-a {
-  color: #333;
-  font-weight: bold;
-  text-decoration: none; }
-
-p {
-  color: #444;
-  font-size: 14px;
-  font-weight: normal;
-  line-height: 21px;
-  margin: 0 0 12px 0; }
-
-p.credit {
-  border-top: 1px solid #ccc;
-  font-size: 14px;
-  line-height: 140%;
-  margin: 36px 0 12px 0;
-  padding: 8px 0 0 0;
-  text-align: center; }
-
-.button-collection {
-  border-top: 2px solid #ccc;
-  margin: 24px 0 36px 0;
-  padding: 4px 0 12px 0; }
-
-.button-info {
-  float: left;
-  margin: 0 40px 0 0;
-  width: 245px; }
-  .button-info h2 {
-    color: #222;
-    font-size: 22px;
-    font-weight: normal;
-    margin: 10px 0 6px 0; }
-
-ul.column {
-  float: left;
-  list-style: none;
-  width: 675px; }
-  ul.column li {
-    background: #eee;
-    -webkit-border-radius: 5px;
-    border-radius: 5px;
-    -webkit-box-shadow: inset 0 1px 1px 0 #c7c7c7;
-    box-shadow: inset 0 1px 1px 0 #c7c7c7;
-    float: left;
-    margin: 10px 0 0 10px;
-    display: block;
-    height: 150px;
-    text-align: center;
-    width: 215px; }
-
-button {
-  margin-top: 60px; }
-
-button.webkit-badge {
-  margin-top: 32px; }
-
-button.webkit-check {
-  margin-top: 30px; }
-
-button.webkit-seal {
-  margin-top: 30px; }
-
-button.cupid-green {
-  margin-top: 62px; }
-
-button.cupid-blue {
-  margin-top: 64px; }
-
-button.blue-pill {
-  margin-top: 62px; }
-
-button.thoughtbot {
-  margin-top: 54px; }
-
-button.punch {
-  margin-top: 54px; }
-
-button.fat-letters {
-  margin-top: 20px; }
-
-button.download-itunes {
-  margin-top: 62px; }
-*/
-/* Clear Floated Elements
-------------------------------------------------------------------------------*/
 .column:after,
 .button-collection:after,
 .clearfix:after,
@@ -768,6 +602,8 @@ div.project-info:after {
     height: 50px;
     padding-left: 30px;
     z-index: 999999999;
+    vertical-align: baseline;
+    font-size: 13px;
 }
 
 .panel-text {

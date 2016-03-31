@@ -310,6 +310,9 @@ PlotticoTrack.insertPanel = function() {
             document.body.style.overflow = "visible";
             document.body.style.overflowY = "visible";
             document.body.style.overflowX = "visible";
+            if(PlotticoTrack.pt_recStarted) {
+                document.getElementById("pt_recording").innerHTML = "recording";
+            }
             if("pt_working" in PlotticoTrack) {
                 document.getElementById("plotticotrack_work").style.visibility = "visible";
             }
@@ -374,7 +377,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     if (PlotticoTrack.pt_recStarted) {
         PlotticoTrack.pt_recStarted = false;
         recorder.stop();
-        document.getElementById("pt_recording").innerHTML = "";
+        if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "";
     }
     chrome.runtime.sendMessage({
         action: "saveRecording",
@@ -503,8 +506,8 @@ PlotticoTrack.initTracker = function(v) {
             else {
                 console.log("starting recorer");
                 recorder.start();
-                document.getElementById("pt_recording").innerHTML = "recording";
                 PlotticoTrack.pt_recStarted = true;
+                if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "recording";
             }
         } else {
             PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 2); // need time for chrome auto-fill to fill in form?? // TODO: watch and detect form fill-in 
@@ -656,7 +659,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action == "play") {
         if (PlotticoTrack.pt_recStarted) {
             recorder.stop();
-            document.getElementById("pt_recording").innerHTML = "";
+            if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "";
             PlotticoTrack.pt_recStarted = false;
         }
         console.log("Loading recording for play");
