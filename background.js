@@ -3,7 +3,7 @@ var tracked_tabs = {};
 var active = false;
 var empty = true;
 var tab_id = null;
-/*global chrome*/
+/*global chrome, load_list, start_tab, save_list*/
 /**
  * Listens for the app launching, then creates the window.
  *
@@ -144,3 +144,13 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         }
     }
 });
+
+load_list(function(l) {
+    var i;
+    for(i=0;i<l.length;i++){
+        if(l[i].autostart) {
+            start_tab(l[i].url, l[i].recid);
+        }
+    }
+});
+

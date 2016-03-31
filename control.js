@@ -32,17 +32,7 @@ window.onload = function(){
                             var url = w2ui.grid.get(sel[i]).url;
                             var recid = w2ui.grid.get(sel[i]).recid;
                             // var win = window.open(url, '_blank');
-                            chrome.tabs.create({
-                                url: url,
-                                active: false,
-                                pinned: true
-                            }, function (tab) { 
-                                // notify bg that we launched a tab with url
-                                console.log("Will now track tab "+tab.id);
-                                chrome.runtime.sendMessage({"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid }, function(response) {});
-                                chrome.tabs.update(tab.id, {active: true});
-                                window.close();
-                            } );
+                            start_tab(url, recid);
                         }
                         // win.focus();
                     }
@@ -62,7 +52,7 @@ window.onload = function(){
                 }
             },
             columns: [
-                { field: 'rdy', caption: 'Enabled', size: '5%', render: 'toggle', hidden: true },
+                { field: 'autostart', caption: 'Auto', size: '6%', editable: { type : 'checkbox' } },
                 { field: 'phash', caption: 'Plotti.co Hash', size: '15%', editable: { type : 'text', inTag : '', style   : '' }},
                 { field: 'url', caption: 'Track URL', size: '50%', editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'timer', caption: 'Timer (s)', size: '10%', editable: { type : 'int', inTag : '', style   : '' } },

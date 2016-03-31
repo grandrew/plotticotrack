@@ -79,3 +79,17 @@ function load_list(cb) {
         });
     });
 }
+
+function start_tab(url, recid) {
+    chrome.tabs.create({
+        url: url,
+        active: false,
+        pinned: true
+    }, function (tab) { 
+        // notify bg that we launched a tab with url
+        console.log("Will now track tab "+tab.id);
+        chrome.runtime.sendMessage({"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid }, function(response) {});
+        chrome.tabs.update(tab.id, {active: true});
+        window.close();
+    } );
+}
