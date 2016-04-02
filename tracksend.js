@@ -383,6 +383,9 @@ PlotticoTrack.checkSend = function() {
 
 PlotticoTrack.saveSelector = function (e, num) {
     var charIndex = getCaretCharacterOffsetWithin(e.target);
+    if(charIndex == null) {
+        return;
+    }
     var xpath = PlotticoTrack.createSelector(e.target);
     var targetText = e.target.textContent;
     var trackablesIndex = PlotticoTrack.parseTrackableIndex(targetText);
@@ -500,7 +503,7 @@ function getSelectionParentElement() {
 }
 
 PlotticoTrack.initTracker = function(v) {
-    if(typeof(PlotticoTrack.pt_trackedSite) != "undefined" && PlotticoTrack.pt_trackedSite) { 
+    if(typeof(PlotticoTrack.pt_trackedSite) != "undefined" && PlotticoTrack.pt_trackedSite) {
         console.log("Will not init the tracker: "+PlotticoTrack.pt_trackedSite);
         return; // already init
     }
@@ -551,7 +554,7 @@ PlotticoTrack.initTracker = function(v) {
                 if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "recording";
             }
         } else {
-            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 2); // need time for chrome auto-fill to fill in form?? // TODO: watch and detect form fill-in 
+            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 2); // need time for chrome auto-fill to fill in form?? // TODO: watch and detect form fill-in
             if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
                 document.getElementById("plotticotrack_work").style.visibility = "visible";
             }
@@ -577,6 +580,10 @@ chrome.runtime.sendMessage({"action": "checkTab"}, function(response) {});
 
 // http://stackoverflow.com/a/4812022/2659616
 function getCaretCharacterOffsetWithin(element) {
+    if(!element) {
+        console.log("WARNING! tried to call getCaretCharacterOffsetWithin on null!");
+        return null;
+    }
     var caretOffset = 0;
     var doc = element.ownerDocument || element.document;
     var win = doc.defaultView || doc.parentWindow;

@@ -88,12 +88,19 @@ function start_tab(url, recid, cb) {
     }, function (tab) {
         // notify bg that we launched a tab with url
         console.log("Will now track tab "+tab.id);
+        var m = {"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid };
+        chrome.runtime.sendMessage(m, function(response) {});
         if(typeof(tracked_tabs) != "undefined") {
-            tracked_tabs[tab.id] = {"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid };
+            tracked_tabs[tab.id] = m;
+        } else {
+            chrome.tabs.sendMessage(tab.id, {
+                "action": "init",
+                "url": url,
+                "tabId": tab.id,
+                "recid": recid
+            });
         }
-        chrome.runtime.sendMessage(tracked_tabs[tab.id], function(response) {});
         chrome.tabs.update(tab.id, {active: true});
-        // chrome.tabs.sendMessage(tab.id, {"action": "init", "url": url, "tabId": tab.id, "recid": recid });
         if(typeof(cb) != "undefined") cb();
     } );
 }
