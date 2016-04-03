@@ -100,6 +100,7 @@ function start_tab(url, recid, cb) {
                 "recid": recid
             });
         }
+        chrome.tabs.insertCSS(tab.id, { "runAt": "document_start", "code":"body { visibility: hidden; }" }, function(){});
         chrome.tabs.update(tab.id, {active: true});
         if(typeof(cb) != "undefined") cb();
     } );

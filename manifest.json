@@ -24,7 +24,8 @@
      "tabs",
      "background",
       "storage",
-     "http://*/*"
+     "http://*/*",
+     "https://*/*"
   ],
   "web_accessible_resources": [
     "templates/*"

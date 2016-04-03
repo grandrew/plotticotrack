@@ -138,6 +138,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             console.log("doing init request");
             tracked_tabs[sender.tab.id].action = "init";
             chrome.tabs.sendMessage(sender.tab.id, tracked_tabs[sender.tab.id]);
+            chrome.tabs.insertCSS(sender.tab.id, { "runAt": "document_start", "code":"body { visibility: hidden; }" }, function(){});
         }
         else {
             console.log("requrest to init not authorized");

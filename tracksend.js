@@ -9,6 +9,7 @@ if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack.pt_retry_action = 0;
     PlotticoTrack.my_hash = Math.random();
     PlotticoTrack.clickWaiting = -1;
+    PlotticoTrack.unsupported_sites = ["yahoo.com"];
 }
 
 function get_vals(objects) {
@@ -152,6 +153,7 @@ PlotticoTrack.sendRequest = function(uri, data, cb) {
 };
 
 PlotticoTrack.getTrackedValue = function() {
+    // if any of the elements to track is not found, we just return nothing. The upper page will try to refresh and then fail
     var normalizedData = [];
     for(var i=0; i<PlotticoTrack.pt_XPath.length;i++) {
         if(typeof(PlotticoTrack.pt_XPath[i]) != "string" || !PlotticoTrack.pt_XPath[i].length) {
@@ -159,12 +161,12 @@ PlotticoTrack.getTrackedValue = function() {
         }
         //console.log("Parsing "+i+" xp "+PlotticoTrack.pt_XPath[i]+'  t' + typeof(PlotticoTrack.pt_XPath[i]) );
         var el = PlotticoTrack.querySelector(PlotticoTrack.pt_XPath[i]);
-        if (!el) return false;
+        if (!el) return [];  
         var inData = el.textContent;
         //console.log("Parse text "+inData);
         var dataList = PlotticoTrack.parseTrackableValues(inData);
         console.log(dataList);
-        if (dataList.length <= parseInt(PlotticoTrack.pt_NumberIndex[i])) return false;
+        if (dataList.length <= parseInt(PlotticoTrack.pt_NumberIndex[i])) return [];
         var trackData = dataList[parseInt(PlotticoTrack.pt_NumberIndex[i])];
         //console.log("Parsing tackdata "+trackData);
         normalizedData[i] = PlotticoTrack.parseUnits(trackData);
@@ -324,10 +326,22 @@ PlotticoTrack.insertPanel = function() {
             if("pt_working" in PlotticoTrack) {
                 document.getElementById("plotticotrack_work").style.visibility = "visible";
             }
+            if(PlotticoTrack.unsupported()) {
+                document.getElementById("plotticotrack_unsupported").style.visibility = "visible";
+            } else {
+                document.body.style.visibility = "visible";
+            }
         });
         xmlHttp.send( null );
     });
     xmlHttp.send( null );
+};
+
+PlotticoTrack.unsupported = function() {
+    for(var i=0;i<PlotticoTrack.unsupported_sites.length; i++) {
+        if(window.location.href.indexOf(PlotticoTrack.unsupported_sites[i]) != -1) return true;
+    }
+    return false;
 };
 
 PlotticoTrack.checkSend = function() {
@@ -338,7 +352,7 @@ PlotticoTrack.checkSend = function() {
             if (PlotticoTrack.bdataSent) {
                 console.log("Can no longer find the tracked element; reload!");
                 window.location.href = PlotticoTrack.pt_trackedSite;
-                location.reload();
+                window.location.reload();
             }
             else {
                 console.log("can not get normalizedData; will retry");
@@ -364,7 +378,7 @@ PlotticoTrack.checkSend = function() {
         if (pt.pt_oldData && pt.pt_oldData.join(",") == normalizedData.join(",") && PlotticoTrack.bdataSent) {
             // need refresh
             console.log("Will do a full page refresh");
-            location.reload();
+            window.location.reload();
         }
         else {
             // console.log("Old: " + pt.pt_oldData + " New: " + normalizedData);
