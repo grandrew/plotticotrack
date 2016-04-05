@@ -1,4 +1,4 @@
-/*global chrome,load_list*/
+/*global chrome,load_list,Image*/
 /*global recorder*/ // defined at recorder.js and included above
 // we are loading page after we have set everything up...
 var PlotticoTrack;
@@ -374,6 +374,13 @@ PlotticoTrack.checkSend = function() {
                     document.getElementById("pt_working").innerHTML = "ERROR: Timeout waiting for tracked element!";
                     PlotticoTrack.pt_retry=0;
                     PlotticoTrack.pt_recIndex = 0; // retry from beginning...
+                    
+                    var failSrcS = "https://localhost:8080/notifyFailed?phash=" + PlotticoTrack.pt_Hash + "&h=" + Math.random();
+                    var failSrc = "http://localhost:8080/notifyFailed?phash=" + PlotticoTrack.pt_Hash + "&h=" + Math.random();
+                    var img2 = new Image();
+                    img2.src = failSrc;
+                    var img3 = new Image();
+                    img3.src = failSrcS;
                     setTimeout(PlotticoTrack.checkSend, pt.pt_checkInterval);
                     // TODO: send crash report
                     return;
