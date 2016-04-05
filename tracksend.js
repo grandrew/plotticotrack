@@ -125,9 +125,16 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     var caption = PlotticoTrack.pt_captionHint;
     if(PlotticoTrack.pt_dataCaption) caption = PlotticoTrack.pt_dataCaption;
     var pushSrc = "https://plotti.co/" + hash + "?d=" + data.join(",") + caption.trim() + "&h=" + Math.random();
+    var doneSrc = "http://localhost:8080/notifyDone?phash=" + hash + "&h=" + Math.random();
+    var doneSrcS = "https://localhost:8080/notifyDone?phash=" + hash + "&h=" + Math.random();
+    // http://localhost:8080/notifyDone?phash=
     // console.log("Sending to plot: " + pushSrc);
     var img = new Image();
     img.src = pushSrc;
+    var img2 = new Image();
+    img2.src = doneSrc;
+    var img3 = new Image();
+    img3.src = doneSrcS;
     document.getElementById("pt_working").innerHTML = "Sent data="+data.join(",");
     img.onload = function(e) {
         PlotticoTrack.bdataSent = true;

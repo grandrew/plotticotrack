@@ -146,7 +146,7 @@ function onStart (window) {
         var cmdline = false;
         // console.log("tabs found -- "+tabs.length);
         for(var i=0; i<tabs.length; i++) {
-            if(tabs[i].url.indexOf("//127.0.0.1:0") != -1) {
+            if(tabs[i].url.indexOf("//127.0.0.1:") != -1) {
                 for (argName in args) {
                     regExp = new RegExp(argName + "=([^\&]+)");
                     match = regExp.exec(tabs[i].url);
@@ -170,7 +170,7 @@ function onStart (window) {
                 // close all other tabs
                 var left = false;
                 for(var i=0; i<tabs.length; i++) {
-                    if(tabs[i].url.indexOf("//127.0.0.1:0") == -1 || left) {
+                    if(tabs[i].url.indexOf("//127.0.0.1:") == -1 || left) {
                         chrome.tabs.remove(tabs[i].id);
                     } else {
                         left = true;

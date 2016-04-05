@@ -3,7 +3,7 @@
   "name": "plotticotrack",
   "short_name": "plotticotrack",
   "description": "",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "minimum_chrome_version": "38",
 
   "icons": {
