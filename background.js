@@ -46,22 +46,7 @@ EventTypes.MouseDrag = 21;
 EventTypes.MouseDrop = 22;
 EventTypes.KeyPress = 23;
 
-// use like this: chrome "http://127.0.0.1:0/?abc=42&xyz=hello"
-chrome.windows.onCreated.addListener(function (window) {
-    chrome.tabs.query({}, function (tabs) {
-        var args = { abc: null, xyz: null }, argName, regExp, match;
-        for (argName in args) {
-            regExp = new RegExp(argName + "=([^\&]+)")
-            match = regExp.exec(tabs[0].url);
-            if (!match) return;
-            args[argName] = match[1];
-        }
-        console.log(JSON.stringify(args));
-        // TODO HERE: either load the supplied arguments (hash, user-id, etc.)
-        //          or read the data from storage and set it to the page
-        
-    });
-});
+
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 //  console.log(request);
@@ -147,21 +132,60 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 chrome.windows.onCreated.addListener(function() {
-    chrome.windows.getAll(function(windows) {
-        console.log("windows amt: "+windows.length);
-        if (windows.length == 1) {
+    
+});
+
+// use like this: chrome "http://127.0.0.1:0/?abc=42&xyz=hello"
+chrome.windows.onCreated.addListener(function (window) {
+    chrome.tabs.query({}, function (tabs) {
+        // http://127.0.0.1:0/?url=%s&interval=%s&caption=%s&phash=%s
+        var args = { url: null, interval: null, caption: null, phash: null }, argName, regExp, match;
+        var cmdline = false;
+        for(var i=0; i<tabs.length; i++) {
+            if(tabs[i].url.indexOf("//127.0.0.1") != -1) {
+                for (argName in args) {
+                    regExp = new RegExp(argName + "=([^\&]+)");
+                    match = regExp.exec(tabs[0].url);
+                    if (!match) return;
+                    args[argName] = match[1];
+                }
+                cmdline = true;
+                break;
+            }
+        }
+        if(cmdline) {
+            console.log("Loading data from command line: "+JSON.stringify(args));
             load_list(function(l) {
-                var i;
-                for(i=0;i<l.length;i++){
-                    if(l[i].autostart) {
-                        start_tab(l[i].url, l[i].recid);
-                    }
+                if(!l.length) {
+                    // 1. set the args to the storage if there are no other args there
+                    
+                    var ll = [{ recid: 0, autostart: true, phash: args.phash, url: args.url, timer: args.interval, caption: args.caption, selector: "", nrindex: -1, script: "" }];
+                    save_list(ll);
+                    // 1.1. open the tab in this case if not tracked already
+                } else {
+                    start_tab(l[0].url, l[0].recid);
+                }
+                
+                // 2. close all the tabs that were open and are not tracked
+                
+            });
+        } else {
+            chrome.windows.getAll(function(windows) {
+                console.log("windows amt: "+windows.length);
+                if (windows.length == 1) {
+                    load_list(function(l) {
+                        var i;
+                        for(i=0;i<l.length;i++){
+                            if(l[i].autostart) {
+                                start_tab(l[i].url, l[i].recid);
+                            }
+                        }
+                    });
                 }
             });
         }
     });
 });
-
 
 // chrome.runtime.getPlatformInfo(function(info) {
 //     // Display host OS in the console

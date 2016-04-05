@@ -95,7 +95,7 @@ window.onload = function(){
     w2ui.grid.on('add', function(event) {
         var nrid = 1;
         if(w2ui.grid.records.length) nrid = w2ui.grid.records[w2ui.grid.records.length-1].recid+1;
-        w2ui['grid'].add({ recid: nrid, phash: makeid(), url: "paste url here", timer: 60*5, caption: '', selector: "", nrindex: -1, script: "" });
+        w2ui['grid'].add({ recid: nrid, autostart: false, phash: makeid(), url: "paste url here", timer: 60*5, caption: '', selector: "", nrindex: -1, script: "" });
         w2ui.grid.editField(nrid, 2);
     });
     
