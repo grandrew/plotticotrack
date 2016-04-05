@@ -1,6 +1,7 @@
 var testcase_items = [];
 var tracked_tabs = {};
 var active = false;
+var firstRun = true;
 var empty = true;
 var tab_id = null;
 /*global chrome, load_list, start_tab, save_list*/
@@ -131,50 +132,55 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
 });
 
-chrome.windows.onCreated.addListener(function() {
-    console.log("oncreated fired 1!");
-    window.oncreated1 = true;
-});
-
-// use like this: chrome "http://127.0.0.1:0/?abc=42&xyz=hello"
-chrome.windows.onCreated.addListener(function (window) {
+function onStart (window) {
+    if(!firstRun) return;
+    firstRun = false;
     console.log("oncreated fired!");
-    window.oncreated2 = true;
     chrome.tabs.query({}, function (tabs) {
+        if(!tabs.length) {
+            console.log("tabs not found!");
+            setTimeout(onStart, 400); // onCreated does not fire when browser starts... for some resason
+        }
         // http://127.0.0.1:0/?url=%s&interval=%s&caption=%s&phash=%s
         var args = { url: null, interval: null, caption: null, phash: null }, argName, regExp, match;
         var cmdline = false;
-        console.log("tabs found: "+tabs.length);
+        // console.log("tabs found -- "+tabs.length);
         for(var i=0; i<tabs.length; i++) {
             if(tabs[i].url.indexOf("//127.0.0.1:0") != -1) {
                 for (argName in args) {
                     regExp = new RegExp(argName + "=([^\&]+)");
                     match = regExp.exec(tabs[i].url);
-                    if (!match) return;
+                    if (!match) continue;
                     args[argName] = match[1];
                 }
                 cmdline = true;
                 break;
             }
         }
+        console.log("cmdline found: "+args);
         if(cmdline) {
             console.log("Loading data from command line: "+JSON.stringify(args));
             load_list(function(l) {
                 if(!l.length) {
                     // 1. set the args to the storage if there are no other args there
-                    
-                    var ll = [{ recid: 0, autostart: true, phash: args.phash, url: args.url, timer: args.interval, caption: args.caption, selector: "", nrindex: -1, script: "" }];
-                    save_list(ll);
+                    var l = [{ recid: 0, autostart: true, phash: args.phash, url: decodeURIComponent(args.url), timer: args.interval, caption: decodeURIComponent(args.caption), selector: "", nrindex: -1, script: "" }];
+                    save_list(l);
                     // 1.1. open the tab in this case if not tracked already
-                } else {
-                    start_tab(l[0].url, l[0].recid);
                 }
-                
+                // close all other tabs
+                var left = false;
+                for(var i=0; i<tabs.length; i++) {
+                    if(tabs[i].url.indexOf("//127.0.0.1:0") == -1 || left) {
+                        chrome.tabs.remove(tabs[i].id);
+                    } else {
+                        left = true;
+                    }
+                }
+                start_tab(l[0].url, l[0].recid);
                 // 2. close all the tabs that were open and are not tracked
-                
             });
         } else {
-        console.log("going ELSE path: "+tabs.length);
+            console.log("no command line args supplied, executing what we have "+tabs.length);
             chrome.windows.getAll(function(windows) {
                 console.log("windows amt: "+windows.length);
                 if (windows.length == 1) {
@@ -190,9 +196,13 @@ chrome.windows.onCreated.addListener(function (window) {
             });
         }
     });
-});
+}
+
+// use like this: chrome "http://127.0.0.1:0/?abc=42&xyz=hello"
+chrome.windows.onCreated.addListener(onStart);
+setTimeout(onStart, 100); // onCreated does not fire when browser starts... for some resason
 
 // chrome.runtime.getPlatformInfo(function(info) {
 //     // Display host OS in the console
 //     console.log(info.os); // watch for cros
-// });
+// }); 

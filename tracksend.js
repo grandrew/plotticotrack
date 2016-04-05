@@ -358,11 +358,11 @@ PlotticoTrack.checkSend = function() {
                 console.log("can not get normalizedData; will retry");
                 PlotticoTrack.pt_retry++;
                 PlotticoTrack.playOne();
-                if(PlotticoTrack.pt_retry % 30 == 0) {
+                if(PlotticoTrack.pt_retry == 30) {
                     PlotticoTrack.pt_recIndex = 0; // retry from beginning...
                 }
 
-                if (PlotticoTrack.pt_retry > 50) {
+                if (PlotticoTrack.pt_retry > 150) {
                     console.log("Failed to wait for the data with retries. Giving up.");
                     document.getElementById("pt_working").innerHTML = "ERROR: Timeout waiting for tracked element!";
                     PlotticoTrack.pt_retry=0;
@@ -659,11 +659,12 @@ PlotticoTrack.playOne = function() {
     if (!el) {
         console.log("  --- element not found!");
         PlotticoTrack.pt_retry_action++;
-        if(PlotticoTrack.pt_retry_action < 10) return;
+        if(PlotticoTrack.pt_retry_action < 3) return;
     }
     if (el && rec.type == TestRecorder.EventTypes.Click) {
         console.log("Executing click!");
-        el.dispatchEvent(new Event("click"));
+        $(el).click();
+        // el.dispatchEvent(new Event("click"));
     }
     PlotticoTrack.pt_retry_action = 0;
     PlotticoTrack.pt_recIndex++;
