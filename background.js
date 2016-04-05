@@ -132,20 +132,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 chrome.windows.onCreated.addListener(function() {
-    
+    console.log("oncreated fired 1!");
+    window.oncreated1 = true;
 });
 
 // use like this: chrome "http://127.0.0.1:0/?abc=42&xyz=hello"
 chrome.windows.onCreated.addListener(function (window) {
+    console.log("oncreated fired!");
+    window.oncreated2 = true;
     chrome.tabs.query({}, function (tabs) {
         // http://127.0.0.1:0/?url=%s&interval=%s&caption=%s&phash=%s
         var args = { url: null, interval: null, caption: null, phash: null }, argName, regExp, match;
         var cmdline = false;
+        console.log("tabs found: "+tabs.length);
         for(var i=0; i<tabs.length; i++) {
-            if(tabs[i].url.indexOf("//127.0.0.1") != -1) {
+            if(tabs[i].url.indexOf("//127.0.0.1:0") != -1) {
                 for (argName in args) {
                     regExp = new RegExp(argName + "=([^\&]+)");
-                    match = regExp.exec(tabs[0].url);
+                    match = regExp.exec(tabs[i].url);
                     if (!match) return;
                     args[argName] = match[1];
                 }
@@ -170,6 +174,7 @@ chrome.windows.onCreated.addListener(function (window) {
                 
             });
         } else {
+        console.log("going ELSE path: "+tabs.length);
             chrome.windows.getAll(function(windows) {
                 console.log("windows amt: "+windows.length);
                 if (windows.length == 1) {
