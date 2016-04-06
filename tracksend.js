@@ -126,22 +126,46 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     if(PlotticoTrack.pt_dataCaption) caption = PlotticoTrack.pt_dataCaption;
     var pushSrc = "https://plotti.co/" + hash + "?d=" + data.join(",") + caption.trim() + "&h=" + Math.random();
     var doneSrc = "http://localhost:8080/notifyDone?phash=" + hash + "&h=" + Math.random();
-    var doneSrcS = "https://localhost:8080/notifyDone?phash=" + hash + "&h=" + Math.random();
+    // var doneSrcS = "https://localhost:443/notifyDone?phash=" + hash + "&h=" + Math.random();
+    
+    PlotticoTrack.xhttp(pushSrc, function(){
+        PlotticoTrack.xhttp(doneSrc, function() {});
+    });
+    
     // http://localhost:8080/notifyDone?phash=
     // console.log("Sending to plot: " + pushSrc);
-    var img = new Image();
-    img.src = pushSrc;
-    var img2 = new Image();
-    img2.src = doneSrc;
-    var img3 = new Image();
-    img3.src = doneSrcS;
+    // var img = new Image();
+    // img.src = pushSrc;
+    var notification_sent = {result: false};
+    
     document.getElementById("pt_working").innerHTML = "Sent data="+data.join(",");
-    img.onload = function(e) {
-        PlotticoTrack.bdataSent = true;
-        // console.log("data successfully sent!");
-        // retry, clear interval here?
-        // but need to make sure we send data only once, so in case of good conn - its ok
-    };
+    // img.onload = function(e) {
+    //     PlotticoTrack.bdataSent = true;
+    //     // console.log("data successfully sent!");
+    //     // retry, clear interval here?
+    //     // but need to make sure we send data only once, so in case of good conn - its ok
+    //     var img2 = new Image();
+    //     img2.src = doneSrc;
+    //     var img3 = new Image();
+    //     img3.src = doneSrcS;
+    //     notification_sent.result = true;
+    // };
+    // img.onerror = function(e) {
+    //     var img2 = new Image();
+    //     img2.src = doneSrc;
+    //     var img3 = new Image();
+    //     img3.src = doneSrcS;
+    //     notification_sent.result = true;
+    // };
+    
+    // setTimeout(function() {
+    //     if(!notification_sent.result) {
+    //         var img2 = new Image();
+    //         img2.src = doneSrc;
+    //         var img3 = new Image();
+    //         img3.src = doneSrcS;
+    //     }
+    // }, 1000);
 };
 
 PlotticoTrack.sendRequest = function(uri, data, cb) {
@@ -351,6 +375,17 @@ PlotticoTrack.unsupported = function() {
     return false;
 };
 
+PlotticoTrack.xhttp = function(url, cb) {
+    chrome.runtime.sendMessage({
+        method: 'GET',
+        action: 'xhttp',
+        url: url,
+        data: null
+    }, function(responseText) {
+        cb();
+    });
+};
+
 PlotticoTrack.checkSend = function() {
     var pt = PlotticoTrack;
     if (pt.pt_XPath.length) {
@@ -375,12 +410,13 @@ PlotticoTrack.checkSend = function() {
                     PlotticoTrack.pt_retry=0;
                     PlotticoTrack.pt_recIndex = 0; // retry from beginning...
                     
-                    var failSrcS = "https://localhost:8080/notifyFailed?phash=" + PlotticoTrack.pt_Hash + "&h=" + Math.random();
+                    // var failSrcS = "https://localhost:443/notifyFailed?phash=" + PlotticoTrack.pt_Hash + "&h=" + Math.random();
                     var failSrc = "http://localhost:8080/notifyFailed?phash=" + PlotticoTrack.pt_Hash + "&h=" + Math.random();
-                    var img2 = new Image();
-                    img2.src = failSrc;
-                    var img3 = new Image();
-                    img3.src = failSrcS;
+                    PlotticoTrack.xhttp(failSrc, function(){});
+                    // var img2 = new Image();
+                    // img2.src = failSrc;
+                    // var img3 = new Image();
+                    // img3.src = failSrcS;
                     setTimeout(PlotticoTrack.checkSend, pt.pt_checkInterval);
                     // TODO: send crash report
                     return;

@@ -50,6 +50,7 @@ EventTypes.KeyPress = 23;
 
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    var callback = sendResponse;
 //  console.log(request);
     
 //   if (request.action == "checkUrl") { // deprecated
@@ -130,6 +131,28 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             console.log("requrest to init not authorized");
         }
     }
+
+    // http://stackoverflow.com/questions/7699615/cross-domain-xmlhttprequest-using-background-pages/7699773#7699773 
+    if (request.action == "xhttp") {
+        var xhttp = new XMLHttpRequest();
+        var method = request.method ? request.method.toUpperCase() : 'GET';
+
+        xhttp.onload = function() {
+            callback(xhttp.responseText);
+        };
+        xhttp.onerror = function() {
+            // Do whatever you want on error. Don't forget to invoke the
+            // callback to clean up the communication port.
+            callback();
+        };
+        xhttp.open(method, request.url, true);
+        if (method == 'POST') {
+            xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        }
+        xhttp.send(request.data);
+        return true; // prevents the callback from being called too early on return
+    }
+    
 });
 
 function onStart (window) {
@@ -197,6 +220,8 @@ function onStart (window) {
         }
     });
 }
+
+
 
 // use like this: chrome "http://127.0.0.1:0/?abc=42&xyz=hello"
 chrome.windows.onCreated.addListener(onStart);
