@@ -186,6 +186,7 @@ function onStart (window) {
             load_list(function(l) {
                 if(!l.length) {
                     // 1. set the args to the storage if there are no other args there
+                    if(!args.caption) args.caption = "";
                     var l = [{ recid: 0, autostart: true, phash: args.phash, url: decodeURIComponent(args.url), timer: args.interval, caption: decodeURIComponent(args.caption), selector: "", nrindex: -1, script: "" }];
                     save_list(l);
                     // 1.1. open the tab in this case if not tracked already
