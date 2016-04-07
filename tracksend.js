@@ -1,4 +1,4 @@
-/*global chrome,load_list,Image*/
+/*global chrome,load_list,Image,UTILS,XPathEvaluator,XPathResult*/
 /*global recorder*/ // defined at recorder.js and included above
 // we are loading page after we have set everything up...
 var PlotticoTrack;
@@ -82,8 +82,36 @@ PlotticoTrack.documentQuerySelector = function(sel) {
     return document.querySelector(sel);
 };
 
-PlotticoTrack.createSelector = PlotticoTrack.fullPath;
-PlotticoTrack.querySelector = PlotticoTrack.documentQuerySelector;
+PlotticoTrack.chromeCopySelector = function (el) {
+    return UTILS.cssPath(el,true);
+};
+
+function has_identifier(lsel) {
+    for(var i=0;i<lsel.length;i++) {
+        if(lsel[i].indexOf(".") != -1 || lsel[i].indexOf("#") != -1) return true;
+    }
+    return false;
+}
+
+PlotticoTrack.fuzzifiedSelector = function (sel) {
+    if(typeof(sel) == "string") {
+        var sel_path = sel.split(" > ");
+        return PlotticoTrack.fuzzifiedSelector(sel_path);
+    } else {
+        var el = document.querySelector(sel.join(" > "));
+        if(el) return el;
+        sel.shift();
+        if(has_identifier(sel)) {
+            return PlotticoTrack.fuzzifiedSelector(sel);
+        } 
+        return null;
+    }
+};
+
+// PlotticoTrack.createSelector = PlotticoTrack.fullPath;
+PlotticoTrack.createSelector = PlotticoTrack.chromeCopySelector;
+// PlotticoTrack.querySelector = PlotticoTrack.documentQuerySelector;
+PlotticoTrack.querySelector = PlotticoTrack.fuzzifiedSelector;
 // PlotticoTrack.nrReg = /[-+]?[0-9]*\.?[0-9]+/g;
 // PlotticoTrack.nrReg = /[-+]?[0-9]*[\.,]?[0-9]+/g;
 PlotticoTrack.nrReg = /[-+]?[0-9\s\u00a0]*[\.,]?[0-9]+/g;
