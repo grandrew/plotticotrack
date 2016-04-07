@@ -351,6 +351,10 @@ PlotticoTrack.insertPanel = function() {
             document.body.style.overflow = "visible";
             document.body.style.overflowY = "visible";
             document.body.style.overflowX = "visible";
+            document.getElementById("pt_blueline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_blueclick'));}
+            document.getElementById("pt_redline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_redclick'));}
+            document.getElementById("pt_yellowline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_yellowclick'));}
+            document.getElementById("pt_startupd").onclick = function () {document.dispatchEvent(new CustomEvent('pt_startclick'));}
             if(PlotticoTrack.pt_recStarted) {
                 document.getElementById("pt_recording").innerHTML = "recording";
             }
