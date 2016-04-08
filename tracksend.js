@@ -93,16 +93,16 @@ function has_identifier(lsel) {
     return false;
 }
 
-PlotticoTrack.fuzzifiedSelector = function (sel, orig) {
+PlotticoTrack.fuzzifiedSelector = function fuzzs (sel, orig) {
     if(typeof(sel) == "string") {
         var sel_path = sel.split(" > ");
-        return PlotticoTrack.fuzzifiedSelector(sel_path, sel_path);
+        return fuzzs(sel_path, sel_path.slice());
     } else {
         var el = document.querySelector(sel.join(" > "));
         if(el) return el;
         sel.shift();
         if(has_identifier(sel)) {
-            return PlotticoTrack.fuzzifiedSelector(sel, orig);
+            return fuzzs(sel, orig);
         }
         // now remove a single specificity tag and start over
         var reduced = false;
@@ -114,7 +114,9 @@ PlotticoTrack.fuzzifiedSelector = function (sel, orig) {
                 reduced = true;
             }
         }
-        if(reduced) return PlotticoTrack.fuzzifiedSelector(orig, orig);
+        if(reduced) {
+            return fuzzs(orig, orig);
+        }
         return null;
     }
 };
