@@ -93,17 +93,28 @@ function has_identifier(lsel) {
     return false;
 }
 
-PlotticoTrack.fuzzifiedSelector = function (sel) {
+PlotticoTrack.fuzzifiedSelector = function (sel, orig) {
     if(typeof(sel) == "string") {
         var sel_path = sel.split(" > ");
-        return PlotticoTrack.fuzzifiedSelector(sel_path);
+        return PlotticoTrack.fuzzifiedSelector(sel_path, sel_path);
     } else {
         var el = document.querySelector(sel.join(" > "));
         if(el) return el;
         sel.shift();
         if(has_identifier(sel)) {
-            return PlotticoTrack.fuzzifiedSelector(sel);
-        } 
+            return PlotticoTrack.fuzzifiedSelector(sel, orig);
+        }
+        // now remove a single specificity tag and start over
+        var reduced = false;
+        for(var j=0; j<orig.length; j++) {
+            if((orig[j].split(".").length - 1) > 1) {
+                orig[j] = orig[j].split(".");
+                orig[j].pop();
+                orig[j] = orig[j].join(".");
+                reduced = true;
+            }
+        }
+        if(reduced) return PlotticoTrack.fuzzifiedSelector(orig, orig);
         return null;
     }
 };
@@ -534,7 +545,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     var old_kd = document.onkeydown;
     var old_ku = document.onkeyup;
     function disable_enter (e) {
-        if (e.keyCode == 13) {
+        if (e.keyCode == 13 || e.keyCode == 9) {
             e.preventDefault();
             e.stopPropagation();
             return false;
