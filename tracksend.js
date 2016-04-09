@@ -127,7 +127,8 @@ PlotticoTrack.createSelector = PlotticoTrack.chromeCopySelector;
 PlotticoTrack.querySelector = PlotticoTrack.fuzzifiedSelector;
 // PlotticoTrack.nrReg = /[-+]?[0-9]*\.?[0-9]+/g;
 // PlotticoTrack.nrReg = /[-+]?[0-9]*[\.,]?[0-9]+/g;
-PlotticoTrack.nrReg = /[-+]?[0-9\s\u00a0]*[\.,]?[0-9]+/g;
+// PlotticoTrack.nrReg = /[-+]?[0-9\s\u00a0]*[\.,]?[0-9]+/g;
+PlotticoTrack.nrReg = /[-+]?[0-9\s\u00a0,]*[\.]?[0-9]+/g;
 PlotticoTrack.parseTrackableValues = function(string) {
     var reg = PlotticoTrack.nrReg;
     var matches = [], found;
@@ -152,7 +153,29 @@ PlotticoTrack.parseTrackableIndex = function(string) {
     return indexes;
 };
 
-PlotticoTrack.parseUnits = function(str) {
+PlotticoTrack.parseUnits = function (str) {
+    // TODO: support scientific notations
+    var str = str.trim();
+    var lstr = str.split(",");
+    if(lstr.length > 1) {
+        if(lstr[lstr.length-1].length == 2 || lstr[lstr.length-1].length == 1) { // TODO: support 0,005 15,4256 56,5345435 etc.
+            return PlotticoTrack.parseUnitsRUS(str);
+        }
+    }
+    return PlotticoTrack.parseUnitsEU(str);
+};
+
+PlotticoTrack.parseUnitsEU = function(str) {
+    str = str.replace(/,/g, "");
+    str = str.replace(/\s/g,""); // any whitesp
+    str = str.replace(/\u00a0/g,""); // nbsp
+    // TODO: wolfram|alpha units simplifier / parser? [and cache alpha results w/convert ratio?]
+    // cheaper and simpler: x=UnitConvert[Quantity[0.2,"GBit/s"]];x/Quantity[1,QuantityUnit[x]]
+    PlotticoTrack.pt_captionHint = str.replace(PlotticoTrack.nrReg, "");
+    return parseFloat(str);
+};
+
+PlotticoTrack.parseUnitsRUS = function(str) {
     str = str.replace(",", ".");
     str = str.replace(/\s/g,""); // any whitesp
     str = str.replace(/\u00a0/g,""); // nbsp
