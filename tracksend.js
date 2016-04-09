@@ -167,8 +167,6 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     if(PlotticoTrack.pt_dataCaption) caption = PlotticoTrack.pt_dataCaption;
     var pushSrc = "https://plotti.co/" + hash + "?d=" + data.join(",") + caption.trim() + "&h=" + Math.random();
     var doneSrc = "http://localhost:8080/notifyDone?phash=" + hash + "&h=" + Math.random();
-    // var doneSrcS = "https://localhost:443/notifyDone?phash=" + hash + "&h=" + Math.random();
-    
     PlotticoTrack.xhttp(pushSrc, function(){
         PlotticoTrack.xhttp(doneSrc, function() {});
     });
@@ -407,6 +405,8 @@ PlotticoTrack.insertPanel = function() {
             } else {
                 document.body.style.visibility = "visible";
             }
+            var doneSrc = "http://localhost:8080/notifyReady?phash=" + PlotticoTrack.pt_Hash + "&h=" + Math.random();
+            PlotticoTrack.xhttp(doneSrc, function() {});
         });
         xmlHttp.send( null );
     });
