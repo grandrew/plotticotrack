@@ -498,6 +498,7 @@ PlotticoTrack.saveSelector = function (e, num) {
     var xpath = PlotticoTrack.createSelector(e.target);
     var targetText = e.target.textContent;
     var trackablesIndex = PlotticoTrack.parseTrackableIndex(targetText);
+    var dataList =        PlotticoTrack.parseTrackableValues(targetText);
     var min_diff = 99999999;
     var nrIndex = -1;
     for (var i = 0; i < trackablesIndex.length; i++) {
@@ -519,6 +520,7 @@ PlotticoTrack.saveSelector = function (e, num) {
         "xpath": PlotticoTrack.pt_XPath.join(";")
     };
     PlotticoTrack.saveValues(trackedInfo);
+    return PlotticoTrack.parseUnits(dataList[nrIndex]);
 };
 
 PlotticoTrack.selectElement = function (num, bt_id) {
@@ -566,7 +568,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             console.log("click happened!");
             e.preventDefault();
             e.stopPropagation();
-            PlotticoTrack.saveSelector(e, num);
+            var data = PlotticoTrack.saveSelector(e, num);
             PlotticoTrack.clickWaiting = -1;
             document.onmouseover = old_mov;
             document.onmouseout = old_moo;
@@ -576,8 +578,11 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             document.onkeyup = old_ku;
             sheet.deleteRule(ruleNum);
             document.getElementById("pt_startupd").disabled = false;
-            document.getElementById(bt_id).disabled = true;
+            // document.getElementById(bt_id).disabled = true;
+            var but = document.getElementById(bt_id);
+            but.className += but.className ? ' pt_button_done' : 'pt_button_done';
             document.getElementById("plotticotrack_message").style.visibility = "hidden";
+            document.getElementById(bt_id).innerHTML = data;
             return false;
         };
     setTimeout(function () {

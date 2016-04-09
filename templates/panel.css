@@ -646,3 +646,14 @@ div.project-info:after {
     visibility: hidden;
   }
 }
+
+.pt_button_done {
+  /*background: #999;*/
+  -webkit-filter: brightness(0.5);
+  filter: brightness(0.5);
+  border: 0;
+  box-shadow: none;
+  color: #aaa;
+  text-shadow: none; 
+  height: auto;
+}
