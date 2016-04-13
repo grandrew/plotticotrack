@@ -697,7 +697,7 @@ PlotticoTrack.initTracker = function(v) {
             }, false);
             // TODO HERE: what to do when stating?
             document.addEventListener("pt_startclick", function(){
-                document.onbeforeunload = null;
+                window.onbeforeunload = null;
                 window.location.href = PlotticoTrack.pt_trackedSite; location.reload();
             }, false);
             if (PlotticoTrack.pt_recording) {
