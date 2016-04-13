@@ -94,29 +94,36 @@ function has_identifier(lsel) {
 }
 
 PlotticoTrack.fuzzifiedSelector = function fuzzs (sel, orig) {
+    // console.log(sel);
     if(typeof(sel) == "string") {
         var sel_path = sel.split(" > ");
         return fuzzs(sel_path, sel_path.slice());
     } else {
         var el = document.querySelector(sel.join(" > "));
         if(el) return el;
-        sel.shift();
-        if(has_identifier(sel)) {
-            return fuzzs(sel, orig);
-        }
+        
         // now remove a single specificity tag and start over
         var reduced = false;
-        for(var j=0; j<orig.length; j++) {
-            if((orig[j].split(".").length - 1) > 1) {
-                orig[j] = orig[j].split(".");
-                orig[j].pop();
-                orig[j] = orig[j].join(".");
+        var my_sel = sel;
+        for(var j=0; j<my_sel.length; j++) {
+            if((my_sel[j].split(".").length - 1) > 1) {
+                my_sel[j] = my_sel[j].split(".");
+                my_sel[j].pop();
+                my_sel[j] = my_sel[j].join(".");
                 reduced = true;
             }
         }
+        
         if(reduced) {
-            return fuzzs(orig, orig);
+            return fuzzs(my_sel, orig);
         }
+        
+        // sel = orig.slice()
+        orig.shift();
+        if(has_identifier(orig)) {
+            return fuzzs(orig, orig.slice());
+        }
+        
         return null;
     }
 };
@@ -562,9 +569,9 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     // console.log("Meaasge action");
     document.getElementById("plotticotrack_message").style.visibility = "visible";
     var sheet = window.document.styleSheets[0];
-    var ruleNum = 0;
+    // var ruleNum = 0;
     if (sheet.cssRules) ruleNum = sheet.cssRules.length;
-    sheet.insertRule('*:hover { border: 1px solid blue; }', ruleNum);
+    // sheet.insertRule('*:hover { border: 1px solid blue; }', ruleNum);
     var old_mov = document.onmouseover;
     var old_moo = document.onmouseout;
     var old_cl = document.onclick;
@@ -581,11 +588,20 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     document.onkeypress = disable_enter;
     document.onkeydown = disable_enter;
     document.onkeyup = disable_enter;
+    window.onbeforeunload = function() {
+        return "PLOTTICO: Please do not leave the page or the selection will be applied. Are you sure to leave?";
+    };
     document.onmouseover = function(e) {
         e.target.contentEditable = true;
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
     };
     document.onmouseout = function(e) {
         e.target.contentEditable = false;
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
     };
     PlotticoTrack.handleSelectClick = function(e) {
             console.log("click happened!");
@@ -599,7 +615,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             document.onkeypress = old_kp;
             document.onkeydown = old_kd;
             document.onkeyup = old_ku;
-            sheet.deleteRule(ruleNum);
+            // sheet.deleteRule(ruleNum);
             document.getElementById("pt_startupd").disabled = false;
             // document.getElementById(bt_id).disabled = true;
             var but = document.getElementById(bt_id);
@@ -680,7 +696,10 @@ PlotticoTrack.initTracker = function(v) {
                 }
             }, false);
             // TODO HERE: what to do when stating?
-            document.addEventListener("pt_startclick", function(){window.location.href = PlotticoTrack.pt_trackedSite; location.reload();}, false);
+            document.addEventListener("pt_startclick", function(){
+                document.onbeforeunload = null;
+                window.location.href = PlotticoTrack.pt_trackedSite; location.reload();
+            }, false);
             if (PlotticoTrack.pt_recording) {
                 console.log("Recording exists! Not starting recorer");
             }
