@@ -165,7 +165,7 @@ function onStart (window) {
             setTimeout(onStart, 400); // onCreated does not fire when browser starts... for some resason
         }
         // http://127.0.0.1:0/?url=%s&interval=%s&caption=%s&phash=%s
-        var args = { url: null, interval: null, caption: null, phash: null }, argName, regExp, match;
+        var args = { url: null, interval: null, caption: null, phash: null, pkey: null }, argName, regExp, match;
         var cmdline = false;
         // console.log("tabs found -- "+tabs.length);
         for(var i=0; i<tabs.length; i++) {
