@@ -59,6 +59,7 @@ window.onload = function(){
                 { field: 'url', caption: 'Track URL', size: '50%', editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'timer', caption: 'Timer (s)', size: '10%', editable: { type : 'int', inTag : '', style   : '' } },
                 { field: 'caption', caption: 'Data caption', size: '120px', editable: { type : 'text', inTag : '', style   : '' } },
+                { field: 'pkey', caption: 'Feed Key', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'selector', caption: 'Selector', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' }},
                 { field: 'nrindex', caption: 'NRIndex', size: '10%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'script', caption: 'Script', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } }
@@ -95,7 +96,7 @@ window.onload = function(){
     w2ui.grid.on('add', function(event) {
         var nrid = 1;
         if(w2ui.grid.records.length) nrid = w2ui.grid.records[w2ui.grid.records.length-1].recid+1;
-        w2ui['grid'].add({ recid: nrid, autostart: false, phash: makeid(), url: "paste url here", timer: 60*5, caption: '', selector: "", nrindex: -1, script: "" });
+        w2ui['grid'].add({ recid: nrid, autostart: false, phash: makeid(), url: "paste url here", timer: 60*5, caption: '', selector: "", nrindex: -1, script: "", pkey: "" });
         w2ui.grid.editField(nrid, 2);
     });
     

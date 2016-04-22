@@ -196,6 +196,7 @@ PlotticoTrack.sendToPlot = function(data, hash) {
     var caption = PlotticoTrack.pt_captionHint;
     if(PlotticoTrack.pt_dataCaption) caption = PlotticoTrack.pt_dataCaption;
     var pushSrc = "https://plotti.co/" + hash + "?d=" + data.join(",") + caption.trim() + "&h=" + Math.random();
+    if(PlotticoTrack.pt_pkey) pushSrc += "&k="+PlotticoTrack.pt_pkey;
     var doneSrc = "http://localhost:8080/notifyDone?phash=" + hash + "&h=" + Math.random();
     PlotticoTrack.xhttp(pushSrc, function(){
         PlotticoTrack.xhttp(doneSrc, function() {});
@@ -674,6 +675,7 @@ PlotticoTrack.initTracker = function(v) {
     PlotticoTrack.pt_captionHint = "";
     PlotticoTrack.pt_recIndex = 0;
     PlotticoTrack.pt_recording = v.script;
+    PlotticoTrack.pt_pkey = v.pkey;
     //console.log("local data "+get_vals(PlotticoTrack));
     // init procedure
         // now check that no one is respoinding to this url already

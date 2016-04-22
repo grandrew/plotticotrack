@@ -187,10 +187,11 @@ function onStart (window) {
                 if(!l.length) {
                     // 1. set the args to the storage if there are no other args there
                     if(!args.caption) args.caption = "";
-                    var l = [{ recid: 0, autostart: true, phash: args.phash, url: decodeURIComponent(args.url), timer: args.interval, caption: decodeURIComponent(args.caption), selector: "", nrindex: -1, script: "" }];
+                    var l = [{ recid: 0, autostart: true, phash: args.phash, url: decodeURIComponent(args.url), timer: args.interval, caption: decodeURIComponent(args.caption), selector: "", nrindex: -1, script: "", pkey: args.pkey }];
                     save_list(l);
                     // 1.1. open the tab in this case if not tracked already
                 }
+                l[0].pkey = args.pkey; // pkey always overrides
                 // close all other tabs
                 var left = false;
                 for(var i=0; i<tabs.length; i++) {
