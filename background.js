@@ -198,6 +198,7 @@ function onStart (window) {
                 
                 // close all other tabs
                 var left = false;
+                tabs.reverse();
                 for(var i=0; i<tabs.length; i++) {
                     if(tabs[i].url.indexOf("//127.0.0.1:") == -1 || left) {
                         chrome.tabs.remove(tabs[i].id);
