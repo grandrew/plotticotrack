@@ -191,7 +191,11 @@ function onStart (window) {
                     save_list(l);
                     // 1.1. open the tab in this case if not tracked already
                 }
-                l[0].pkey = args.pkey; // pkey always overrides
+                if(!l[0].pkey && args.pkey) {
+                    l[0].pkey = args.pkey; // pkey always overrides
+                    save_list(l);
+                }
+                
                 // close all other tabs
                 var left = false;
                 for(var i=0; i<tabs.length; i++) {
