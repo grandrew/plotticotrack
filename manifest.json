@@ -23,7 +23,8 @@
  "permissions": [
      "tabs",
      "background",
-      "storage",
+     "storage",
+     "browsingData",
      "http://*/*",
      "https://*/*"
   ],

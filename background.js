@@ -182,6 +182,20 @@ function onStart (window) {
         }
         console.log("cmdline found: "+args);
         if(cmdline) {
+            chrome.browsingData.remove({}, {
+                "appcache": true,
+                "cache": true,
+                "cookies": false,
+                "downloads": true,
+                "fileSystems": true,
+                "formData": false,
+                "history": true,
+                "indexedDB": true,
+                "localStorage": false,
+                "pluginData": true,
+                "passwords": false,
+                "webSQL": true
+              }, function(){});
             console.log("Loading data from command line: "+JSON.stringify(args));
             load_list(function(l) {
                 if(!l.length) {
