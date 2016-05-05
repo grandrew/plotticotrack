@@ -1054,16 +1054,6 @@ TestRecorder.Recorder.prototype.oncontextmenu = function(e) {
 
 TestRecorder.Recorder.prototype.onkeypress = function(e) {
     var e = new TestRecorder.Event(e);
-    if (e.shiftkey() && (e.keychar() == 'C')) {
-        // TODO show comment box here
-    }
-    if (e.shiftkey() && (e.keychar() == 'S')) {
-        recorder.testcase.append(new TestRecorder.ScreenShotEvent());
-        e.stopPropagation();
-        e.preventDefault();
-        return false;
-    }
-    
     var last = recorder.testcase.peek();
     if(last.type == TestRecorder.EventTypes.KeyPress) {
         last.text = last.text + e.keychar();
