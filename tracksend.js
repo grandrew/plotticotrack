@@ -10,6 +10,7 @@ if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack.my_hash = Math.random();
     PlotticoTrack.clickWaiting = -1;
     PlotticoTrack.unsupported_sites = ["yahoo.com"];
+    PlotticoTrack.pt_docListenersCleaned = false;
 }
 
 function get_vals(objects) {
@@ -262,7 +263,7 @@ PlotticoTrack.getTrackedValue = function() {
         }
         //console.log("Parsing "+i+" xp "+PlotticoTrack.pt_XPath[i]+'  t' + typeof(PlotticoTrack.pt_XPath[i]) );
         var el = PlotticoTrack.querySelector(PlotticoTrack.pt_XPath[i]);
-        if (!el) return [];  
+        if (!el) return [];
         var inData = el.textContent;
         //console.log("Parse text "+inData);
         var dataList = PlotticoTrack.parseTrackableValues(inData);
@@ -416,15 +417,15 @@ PlotticoTrack.insertPanel = function() {
         xmlHttp.open( "GET", chrome.extension.getURL ("templates/panel.html"), true );
         xmlHttp.addEventListener("load", function() {
             var inject  = document.createElement("div");
+            inject.id = "plotticotrack_main_panel";
             inject.innerHTML = xmlHttp.responseText;
             document.body.appendChild(inject);
             document.body.style.overflow = "visible";
             document.body.style.overflowY = "visible";
             document.body.style.overflowX = "visible";
-            document.getElementById("pt_blueline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_blueclick'));}
-            document.getElementById("pt_redline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_redclick'));}
-            document.getElementById("pt_yellowline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_yellowclick'));}
-            document.getElementById("pt_startupd").onclick = function () {document.dispatchEvent(new CustomEvent('pt_startclick'));}
+            
+            setup_panel_buttons();
+            
             if(PlotticoTrack.pt_recStarted) {
                 document.getElementById("pt_recording").innerHTML = "recording";
             }
@@ -443,6 +444,13 @@ PlotticoTrack.insertPanel = function() {
     });
     xmlHttp.send( null );
 };
+
+function setup_panel_buttons() {
+    document.getElementById("pt_blueline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_blueclick'));}
+    document.getElementById("pt_redline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_redclick'));}
+    document.getElementById("pt_yellowline").onclick = function () {document.dispatchEvent(new CustomEvent('pt_yellowclick'));}
+    document.getElementById("pt_startupd").onclick = function () {document.dispatchEvent(new CustomEvent('pt_startclick'));}
+}
 
 PlotticoTrack.unsupported = function() {
     for(var i=0;i<PlotticoTrack.unsupported_sites.length; i++) {
@@ -554,11 +562,31 @@ PlotticoTrack.saveSelector = function (e, num) {
     return PlotticoTrack.parseUnits(dataList[nrIndex]);
 };
 
+// http://stackoverflow.com/a/34693314/2659616
+function recreateNode(el, withChildren) {
+  console.log("Recreating");
+  console.log(el);
+  if (withChildren) {
+    var newEl = el.cloneNode(true);
+    el.parentNode.replaceChild(newEl, el);
+  } else {
+    var newEl = el.cloneNode(false);
+    while (el.hasChildNodes()) newEl.appendChild(el.firstChild);
+    el.parentNode.replaceChild(newEl, el);
+  }
+  return newEl;
+}
+
 PlotticoTrack.selectElement = function (num, bt_id) {
     if (PlotticoTrack.pt_recStarted) {
         PlotticoTrack.pt_recStarted = false;
         recorder.stop();
         if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "";
+    }
+    if(!PlotticoTrack.pt_docListenersCleaned) {
+        recreateNode(document.body, true);
+        PlotticoTrack.pt_docListenersCleaned = true;
+        setup_panel_buttons();
     }
     chrome.runtime.sendMessage({
         action: "saveRecording",
