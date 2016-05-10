@@ -3,7 +3,7 @@
   "name": "Plotti.co Tracker Pro",
   "short_name": "Plottico-pro",
   "description": "",
-  "version": "0.0.13",
+  "version": "0.0.15",
   "minimum_chrome_version": "38",
 
   "icons": {
@@ -33,7 +33,7 @@
   ],
   "content_scripts": [{
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["css_path.js", "jquery.min.js", "nolog.js", "recorder.js", "gridhelper.js", "lz-string.js", "tracksend.js"]
+        "js": ["css_path.js", "jquery.min.js", "nolog.js", "recorder.js", "gridhelper.js", "lz-string.js", "super_selector.js", "tracksend.js"]
   }],
   "offline_enabled": true,
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",

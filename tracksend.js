@@ -1,5 +1,7 @@
 /*global chrome,load_list,Image,UTILS,XPathEvaluator,XPathResult*/
 /*global recorder*/ // defined at recorder.js and included above
+/*global get_dom_shot, execute_selector*/
+/*global atob, btoa*/
 // we are loading page after we have set everything up...
 var PlotticoTrack;
 if (typeof(PlotticoTrack) == "undefined") {
@@ -9,7 +11,8 @@ if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack.pt_retry_action = 0;
     PlotticoTrack.my_hash = Math.random();
     PlotticoTrack.clickWaiting = -1;
-    PlotticoTrack.unsupported_sites = ["yahoo.com"];
+    // PlotticoTrack.unsupported_sites = ["yahoo.com"];
+    PlotticoTrack.unsupported_sites = [];
     PlotticoTrack.pt_docListenersCleaned = false;
 }
 
@@ -87,6 +90,23 @@ PlotticoTrack.chromeCopySelector = function (el) {
     return UTILS.cssPath(el,true);
 };
 
+var SUPER_ID = ">";
+
+PlotticoTrack.getCombinedSuperSelector = function(el) {
+    var ssel = get_dom_shot(el);
+    if(execute_selector(ssel) === el && execute_selector(ssel, true) === el) {
+        return SUPER_ID+btoa(JSON.stringify(ssel));
+    }
+    return PlotticoTrack.chromeCopySelector(el);
+};
+
+PlotticoTrack.chooseSelector = function(sel) {
+    if(sel[0] == SUPER_ID) {
+        return execute_selector(JSON.parse(atob(sel.substring(1))));
+    }
+    return PlotticoTrack.fuzzifiedSelector(sel);
+};
+
 function has_identifier(lsel) {
     for(var i=0;i<lsel.length;i++) {
         if(lsel[i].indexOf(".") != -1 || lsel[i].indexOf("#") != -1) return true;
@@ -130,9 +150,13 @@ PlotticoTrack.fuzzifiedSelector = function fuzzs (sel, orig) {
 };
 
 // PlotticoTrack.createSelector = PlotticoTrack.fullPath;
-PlotticoTrack.createSelector = PlotticoTrack.chromeCopySelector;
+// PlotticoTrack.createSelector = PlotticoTrack.chromeCopySelector;
+PlotticoTrack.createSelector = PlotticoTrack.getCombinedSuperSelector;
+
 // PlotticoTrack.querySelector = PlotticoTrack.documentQuerySelector;
-PlotticoTrack.querySelector = PlotticoTrack.fuzzifiedSelector;
+// PlotticoTrack.querySelector = PlotticoTrack.fuzzifiedSelector;
+PlotticoTrack.querySelector = PlotticoTrack.chooseSelector;
+
 // PlotticoTrack.nrReg = /[-+]?[0-9]*\.?[0-9]+/g;
 // PlotticoTrack.nrReg = /[-+]?[0-9]*[\.,]?[0-9]+/g;
 // PlotticoTrack.nrReg = /[-+]?[0-9\s\u00a0]*[\.,]?[0-9]+/g;
