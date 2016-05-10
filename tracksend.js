@@ -278,6 +278,13 @@ PlotticoTrack.sendRequest = function(uri, data, cb) {
     req.send();
 };
 
+PlotticoTrack.getTargetContent = function(el) {
+    if(el.nodeName == "INPUT") {
+        return el.value;
+    }
+    return el.textContent;
+}
+
 PlotticoTrack.getTrackedValue = function() {
     // if any of the elements to track is not found, we just return nothing. The upper page will try to refresh and then fail
     var normalizedData = [];
@@ -288,7 +295,7 @@ PlotticoTrack.getTrackedValue = function() {
         //console.log("Parsing "+i+" xp "+PlotticoTrack.pt_XPath[i]+'  t' + typeof(PlotticoTrack.pt_XPath[i]) );
         var el = PlotticoTrack.querySelector(PlotticoTrack.pt_XPath[i]);
         if (!el) return [];
-        var inData = el.textContent;
+        var inData = PlotticoTrack.getTargetContent(el);
         //console.log("Parse text "+inData);
         var dataList = PlotticoTrack.parseTrackableValues(inData);
         console.log(dataList);
@@ -559,7 +566,7 @@ PlotticoTrack.saveSelector = function (e, num) {
         return;
     }
     var xpath = PlotticoTrack.createSelector(e.target);
-    var targetText = e.target.textContent;
+    var targetText = PlotticoTrack.getTargetContent(e.target);
     var trackablesIndex = PlotticoTrack.parseTrackableIndex(targetText);
     var dataList =        PlotticoTrack.parseTrackableValues(targetText);
     var min_diff = 99999999;
