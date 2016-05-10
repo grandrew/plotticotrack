@@ -785,7 +785,8 @@ PlotticoTrack.initTracker = function(v) {
                 if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "recording";
             }
         } else {
-            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 2000); // need time for chrome auto-fill to fill in form?? // TODO: watch and detect form fill-in
+            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 7); // need time for chrome auto-fill to fill in form?? // TODO: watch and detect form fill-in
+            // setTimeout(function(){console.log("plauone");PlotticoTrack.playOne();}, 5000);
             if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
                 document.getElementById("plotticotrack_work").style.visibility = "visible";
             }
@@ -891,14 +892,30 @@ PlotticoTrack.playOne = function() {
 };
 
 PlotticoTrack.do_click = function (el) {
+    // var allInputs = document.getElementsByTagName("input");
+    // for(var i=0;i<allInputs.length;i++) {
+    //     if(allInputs[i].type == "password")  {
+    //         allInputs[i].focus(); // fix for chome bug with form autofill
+    //         console.log(allInputs[i].value);
+    //     }
+    // }
+    // allInputs[0].focus();
+    // for(var i=0;i<allInputs.length;i++) {
+    //     if(allInputs[i].type == "password")  {
+    //         allInputs[i].focus(); // fix for chome bug with form autofill
+    //         console.log(allInputs[i].value);
+    //     }
+    // }
     var clickEvt = document.createEvent('MouseEvents');
     clickEvt.initEvent(
-       'click'     // event type
-       ,true     // can bubble?
-       ,true      // cancelable?
+      'click'     // event type
+      ,true     // can bubble?
+      ,true      // cancelable?
     );
-    // $(el).click();
     el.dispatchEvent(clickEvt);
+    // $(el).click();
+    // console.log("only click, password: "+document.getElementsByTagName("input")[1].value);
+    // el.dispatchEvent(new Event("click"));
 }
 
 PlotticoTrack.saveValues = function(trackedInfo) {
