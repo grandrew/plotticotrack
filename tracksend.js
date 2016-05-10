@@ -508,9 +508,9 @@ PlotticoTrack.checkSend = function() {
         // do a fast replay first
         if (PlotticoTrack.pt_recIndex < PlotticoTrack.pt_recording.length) {
             if(PlotticoTrack.playOne()) {
-                setTimeout(PlotticoTrack.checkSend, 300);
+                setTimeout(PlotticoTrack.checkSend, 700);
             } else {
-                setTimeout(PlotticoTrack.checkSend, 100);
+                setTimeout(PlotticoTrack.checkSend, 700);
             }
             return;
         }
@@ -785,7 +785,7 @@ PlotticoTrack.initTracker = function(v) {
                 if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "recording";
             }
         } else {
-            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 2); // need time for chrome auto-fill to fill in form?? // TODO: watch and detect form fill-in
+            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 2000); // need time for chrome auto-fill to fill in form?? // TODO: watch and detect form fill-in
             if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
                 document.getElementById("plotticotrack_work").style.visibility = "visible";
             }
@@ -881,20 +881,25 @@ PlotticoTrack.playOne = function() {
     }
     if (el && rec.type == TestRecorder.EventTypes.Click) {
         console.log("Executing click! " + rec.info.selector);
-        var clickEvt = document.createEvent('MouseEvents');
-        clickEvt.initEvent(
-           'click'     // event type
-           ,true     // can bubble?
-           ,true      // cancelable?
-        );
-        // $(el).click();
-        el.dispatchEvent(clickEvt);
+        console.log(el);
+        PlotticoTrack.do_click(el);
         // el.dispatchEvent(new Event("click"));
     }
     PlotticoTrack.pt_retry_action = 0;
     PlotticoTrack.pt_recIndex++;
     return true;
 };
+
+PlotticoTrack.do_click = function (el) {
+    var clickEvt = document.createEvent('MouseEvents');
+    clickEvt.initEvent(
+       'click'     // event type
+       ,true     // can bubble?
+       ,true      // cancelable?
+    );
+    // $(el).click();
+    el.dispatchEvent(clickEvt);
+}
 
 PlotticoTrack.saveValues = function(trackedInfo) {
     load_list(function(l) {
