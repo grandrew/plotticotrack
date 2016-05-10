@@ -1,6 +1,6 @@
 /*global chrome,load_list,Image,UTILS,XPathEvaluator,XPathResult*/
 /*global recorder*/ // defined at recorder.js and included above
-/*global get_dom_shot, execute_selector*/
+/*global get_dom_shot, execute_selector, b64_encode_safe, b64_decode_safe*/
 /*global atob, btoa*/
 // we are loading page after we have set everything up...
 var PlotticoTrack;
@@ -95,14 +95,14 @@ var SUPER_ID = ">";
 PlotticoTrack.getCombinedSuperSelector = function(el) {
     var ssel = get_dom_shot(el);
     if(execute_selector(ssel) === el && execute_selector(ssel, true) === el) {
-        return SUPER_ID+btoa(JSON.stringify(ssel));
+        return SUPER_ID+b64_encode_safe(JSON.stringify(ssel));
     }
     return PlotticoTrack.chromeCopySelector(el);
 };
 
 PlotticoTrack.chooseSelector = function(sel) {
     if(sel[0] == SUPER_ID) {
-        return execute_selector(JSON.parse(atob(sel.substring(1))));
+        return execute_selector(JSON.parse(b64_decode_safe(sel.substring(1))));
     }
     return PlotticoTrack.fuzzifiedSelector(sel);
 };

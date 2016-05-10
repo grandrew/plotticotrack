@@ -105,3 +105,18 @@ function start_tab(url, recid, cb) {
         if(typeof(cb) != "undefined") cb();
     } );
 }
+
+
+function b64_encode_safe(str) {
+    return window.btoa(unescape(encodeURIComponent(str)));
+}
+
+function b64_decode_safe(b64) {
+    return decodeURIComponent(escape(window.atob(b64)));
+}
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
+

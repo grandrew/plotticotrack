@@ -106,12 +106,13 @@ function diffAlg(s1, s2) {
 function get_dom_shot(el) {
     var p_el = el;
     var old_p = el;
-    var all_shots = [p_el.outerHTML];
+    var all_shots = [p_el.outerHTML.replaceAll(' contenteditable="true">','').replaceAll(' contenteditable="false">','')];
     while(JSON.stringify(all_shots).length < 500) {
         old_p = p_el;
         p_el = p_el.parentNode;
         if(!p_el) break;
-        all_shots.push(p_el.outerHTML.replace(old_p.outerHTML, ""));
+        
+        all_shots.push(p_el.outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true">','').replaceAll(' contenteditable="false">',''));
     }
     return [el.tagName, all_shots]; 
 }
