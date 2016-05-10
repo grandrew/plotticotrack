@@ -287,6 +287,7 @@ PlotticoTrack.getTargetContent = function(el) {
 
 PlotticoTrack.getTrackedValue = function() {
     // if any of the elements to track is not found, we just return nothing. The upper page will try to refresh and then fail
+    // TODO: this may not be desired behaviour.. but we may not find the element because we need to retry
     var normalizedData = [];
     for(var i=0; i<PlotticoTrack.pt_XPath.length;i++) {
         if(typeof(PlotticoTrack.pt_XPath[i]) != "string" || !PlotticoTrack.pt_XPath[i].length) {
@@ -504,6 +505,16 @@ PlotticoTrack.xhttp = function(url, cb) {
 PlotticoTrack.checkSend = function() {
     var pt = PlotticoTrack;
     if (pt.pt_XPath.length) {
+        // do a fast replay first
+        if (PlotticoTrack.pt_recIndex < PlotticoTrack.pt_recording.length) {
+            if(PlotticoTrack.playOne()) {
+                setTimeout(PlotticoTrack.checkSend, 300);
+            } else {
+                setTimeout(PlotticoTrack.checkSend, 100);
+            }
+            return;
+        }
+        PlotticoTrack.pt_recIndex = 0; // retry from beginning...
         var normalizedData = PlotticoTrack.getTrackedValue();
         if (!normalizedData.length) {
             if (PlotticoTrack.bdataSent) {
@@ -766,6 +777,9 @@ PlotticoTrack.initTracker = function(v) {
             }
             else {
                 console.log("starting recorer");
+                // TestRecorder.ElementInfo.prototype.getCleanCSSSelector = PlotticoTrack.chromeCopySelector;
+                TestRecorder.ElementInfo.prototype.getCleanCSSSelector = PlotticoTrack.getCombinedSuperSelector;
+                
                 recorder.start();
                 PlotticoTrack.pt_recStarted = true;
                 if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "recording";
@@ -850,27 +864,36 @@ PlotticoTrack.playOne = function() {
 
     if (PlotticoTrack.pt_recIndex >= PlotticoTrack.pt_recording.length) {
         console.log("No more actions recorded");
-        return;
+        return false;
     }
 
     if (!rec) {
         console.log("nothing to play at index " + PlotticoTrack.pt_recIndex);
-        return;
+        return false;
     }
     console.log("Trying to perform action " + rec.type + " on element " + rec.info.selector);
-    var el = document.querySelector(rec.info.selector);
+    // var el = document.querySelector(rec.info.selector);
+    var el = PlotticoTrack.chooseSelector(rec.info.selector);
     if (!el) {
         console.log("  --- element not found!");
         PlotticoTrack.pt_retry_action++;
-        if(PlotticoTrack.pt_retry_action < 3) return;
+        if(PlotticoTrack.pt_retry_action < 3) return false;
     }
     if (el && rec.type == TestRecorder.EventTypes.Click) {
-        console.log("Executing click!");
-        $(el).click();
+        console.log("Executing click! " + rec.info.selector);
+        var clickEvt = document.createEvent('MouseEvents');
+        clickEvt.initEvent(
+           'click'     // event type
+           ,true     // can bubble?
+           ,true      // cancelable?
+        );
+        // $(el).click();
+        el.dispatchEvent(clickEvt);
         // el.dispatchEvent(new Event("click"));
     }
     PlotticoTrack.pt_retry_action = 0;
     PlotticoTrack.pt_recIndex++;
+    return true;
 };
 
 PlotticoTrack.saveValues = function(trackedInfo) {

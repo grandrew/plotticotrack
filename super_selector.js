@@ -114,6 +114,9 @@ function get_dom_shot(el) {
         
         all_shots.push(p_el.outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true">','').replaceAll(' contenteditable="false">',''));
     }
+    if(JSON.stringify(all_shots).length > 2000) {
+        all_shots.pop();
+    }
     return [el.tagName, all_shots]; 
 }
 

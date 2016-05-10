@@ -302,6 +302,7 @@ TestRecorder.ElementInfo = function(element) {
     this.href = element.href;
     this.tagName = element.tagName;
     this.selector = this.getCleanCSSSelector(element);
+    console.log("Selector: "+this.selector);
     this.value = element.value;
     this.checked = element.checked;
     this.name = element.name;
