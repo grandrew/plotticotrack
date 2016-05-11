@@ -509,7 +509,7 @@ PlotticoTrack.checkSend = function() {
         // do a fast replay first
         if (PlotticoTrack.pt_recIndex < PlotticoTrack.pt_recording.length) {
             if(PlotticoTrack.playOne()) {
-                setTimeout(PlotticoTrack.checkSend, pt.pt_checkInterval);
+                setTimeout(PlotticoTrack.checkSend, pt.pt_waitInterval);
             } else {
                 setTimeout(PlotticoTrack.checkSend, 100);
             }
