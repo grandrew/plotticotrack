@@ -98,21 +98,28 @@ function sift4(s1, s2, maxOffset, maxDistance) {
     return Math.round(Math.max(l1,l2)- lcss +trans); //add the cost of transpositions to the final result
 }
 
-function diffAlg(s1, s2) {
-    return sift4(s1, s2, 10);
+function diffAlg(s1, s2, maxDistance) {
+    return sift4(s1, s2, 10, maxDistance);
     //return levDist(s1, s2);
+}
+
+function get_super_selector(el) {
+    var dom_shot = get_dom_shot(el);
+    var element_info = entropy_match(dom_shot, false, true);
+    dom_shot.push(element_info.entropy_window);
+    return dom_shot;
 }
 
 function get_dom_shot(el) {
     var p_el = el;
     var old_p = el;
-    var all_shots = [p_el.outerHTML.replaceAll(' contenteditable="true">','').replaceAll(' contenteditable="false">','')];
+    var all_shots = [p_el.outerHTML.replaceAll(' contenteditable="true">','>').replaceAll(' contenteditable="false">','>')];
     while(JSON.stringify(all_shots).length < 500) {
         old_p = p_el;
         p_el = p_el.parentNode;
         if(!p_el) break;
         
-        all_shots.push(p_el.outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true">','').replaceAll(' contenteditable="false">',''));
+        all_shots.push(p_el.outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true">','>').replaceAll(' contenteditable="false">','>'));
     }
     if(JSON.stringify(all_shots).length > 2000) {
         all_shots.pop();
@@ -120,18 +127,18 @@ function get_dom_shot(el) {
     return [el.tagName, all_shots]; 
 }
 
-function compare_shots(s1, s2) {
+function compare_shots(s1, s2, maxDistance) {
     var maxlen;
     if(s1.length > s2.length) maxlen = s1.length;
     else maxlen = s2.length;
     var dist = 0;
     for(var i=0;i<maxlen;i++){
-        dist += diffAlg(""+s1[i], ""+s2[i]);
+        dist += diffAlg(""+s1[i], ""+s2[i], maxDistance);
     }
     return dist;
 }
 
-function execute_selector(sel_list, back) {
+function entropy_match(sel_list, back, full) {
     var tagName = sel_list[0];
     var sel = sel_list[1];
     var tels = document.getElementsByTagName(tagName);
@@ -140,21 +147,34 @@ function execute_selector(sel_list, back) {
     var min_diff = 999999;
     var min_diff_i = -1;
     var cdif;
+    var entropy_window = min_diff;
     if(back) {
         tels = Array.prototype.slice.call(tels);
         tels.reverse();
     }
+    full = true; // TODO: sift4 unstable in maxDistance, need to investigate
     for(var i=0; i<tels.length; i++) {
         dshot = get_dom_shot(tels[i]);
-        cdif = compare_shots(sel, dshot[1]);
+        if(full) {
+            cdif = compare_shots(sel, dshot[1], 0);
+        } else {
+            cdif = compare_shots(sel, dshot[1], min_diff * 10);
+        }
         diffs.push(cdif);
         if(cdif < min_diff) {
+            entropy_window = min_diff;
             min_diff = cdif;
             min_diff_i = i;
+            if(min_diff == 0) break;
         }
     }
-    // console.log(diffs);
+    //console.log(diffs);
     // console.log(min_diff);
-    return tels[min_diff_i];
+    if(sel_list[2] && min_diff >= sel_list[2]) return {"node": null, "entropy_window": 0, "min_diff": min_diff};
+    return {"node": tels[min_diff_i], "entropy_window": entropy_window-min_diff, "min_diff": min_diff};
+}
+
+function execute_selector(sel_list, back) {
+    return entropy_match(sel_list, back).node;
 }
 
