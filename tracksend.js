@@ -1,6 +1,6 @@
 /*global chrome,load_list,Image,UTILS,XPathEvaluator,XPathResult*/
 /*global recorder*/ // defined at recorder.js and included above
-/*global get_dom_shot, execute_selector, b64_encode_safe, b64_decode_safe*/
+/*global get_dom_shot, execute_selector, b64_encode_safe, b64_decode_safe, xor*/
 /*global atob, btoa*/
 // we are loading page after we have set everything up...
 var PlotticoTrack;
@@ -14,6 +14,7 @@ if (typeof(PlotticoTrack) == "undefined") {
     // PlotticoTrack.unsupported_sites = ["yahoo.com"];
     PlotticoTrack.unsupported_sites = [];
     PlotticoTrack.pt_docListenersCleaned = false;
+    PlotticoTrack.pt_xorkey = "00000000000000000000000000000000000000";
 }
 
 function get_vals(objects) {
@@ -508,9 +509,9 @@ PlotticoTrack.checkSend = function() {
         // do a fast replay first
         if (PlotticoTrack.pt_recIndex < PlotticoTrack.pt_recording.length) {
             if(PlotticoTrack.playOne()) {
-                setTimeout(PlotticoTrack.checkSend, 700);
+                setTimeout(PlotticoTrack.checkSend, pt.pt_checkInterval);
             } else {
-                setTimeout(PlotticoTrack.checkSend, 700);
+                setTimeout(PlotticoTrack.checkSend, 100);
             }
             return;
         }
@@ -726,6 +727,38 @@ function getSelectionParentElement() {
     return parentEl;
 }
 
+PlotticoTrack.setFilledPassword = function() {
+    var getOb = {};
+    getOb[PlotticoTrack.pt_trackedSite] = null;
+    chrome.storage.sync.get(getOb,function(v){
+        var allInputs = document.getElementsByTagName("input");
+        for(var i=0;i<allInputs.length;i++) {
+            if(allInputs[i].name) {
+                if(allInputs[i].type == "password")  {
+                    if(!allInputs[i].value) {
+                        if(allInputs[i].name in v[PlotticoTrack.pt_trackedSite]) 
+                            allInputs[i].value = xor(v[PlotticoTrack.pt_trackedSite][allInputs[i].name], PlotticoTrack.pt_xorkey, 1);
+                        else
+                            console.log("No stored value for password field "+allInputs[i].name);
+                    } else {
+                        console.log("Already have value for password field "+allInputs[i].name);
+                        clearInterval(PlotticoTrack.pt_fillInterval);
+                    }
+                } else {
+                    if(!allInputs[i].value) {
+                        if(allInputs[i].name in v[PlotticoTrack.pt_trackedSite]) 
+                            allInputs[i].value = xor(v[PlotticoTrack.pt_trackedSite][allInputs[i].name], PlotticoTrack.pt_xorkey.substring(PlotticoTrack.pt_xorkey.length/2), 1);
+                        else
+                            console.log("No stored value for field "+allInputs[i].name);
+                    } else
+                        console.log("Already have value for field "+allInputs[i].name);
+                }
+            }
+            
+        }
+    });
+};
+
 PlotticoTrack.initTracker = function(v) {
     if(typeof(PlotticoTrack.pt_trackedSite) != "undefined" && PlotticoTrack.pt_trackedSite) {
         console.log("Will not init the tracker: "+PlotticoTrack.pt_trackedSite);
@@ -752,6 +785,8 @@ PlotticoTrack.initTracker = function(v) {
     PlotticoTrack.initall = setTimeout(function (){
         console.log("Site found! Launching");
         PlotticoTrack.insertPanel();
+        PlotticoTrack.pt_fillInterval = setInterval(PlotticoTrack.setFilledPassword, 300);
+        PlotticoTrack.setFilledPassword();
         if (!PlotticoTrack.pt_XPath.length) {
             console.log("No xpath! Trying recording session");
             document.addEventListener("pt_blueclick", function(){PlotticoTrack.selectElement(0, "pt_blueline");}, false);
@@ -785,7 +820,7 @@ PlotticoTrack.initTracker = function(v) {
                 if(document.getElementById("pt_recording")) document.getElementById("pt_recording").innerHTML = "recording";
             }
         } else {
-            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 7); // need time for chrome auto-fill to fill in form?? // TODO: watch and detect form fill-in
+            PlotticoTrack.pt_checkTimer = setTimeout(PlotticoTrack.checkSend, PlotticoTrack.pt_waitInterval * 2); // need time for auto-fill to fill in form?? // TODO: watch and detect form fill-in
             // setTimeout(function(){console.log("plauone");PlotticoTrack.playOne();}, 5000);
             if(document.getElementById("pt_selectaction") && document.getElementById("pt_working")) {
                 document.getElementById("plotticotrack_work").style.visibility = "visible";
@@ -883,7 +918,13 @@ PlotticoTrack.playOne = function() {
     if (el && rec.type == TestRecorder.EventTypes.Click) {
         console.log("Executing click! " + rec.info.selector);
         console.log(el);
-        PlotticoTrack.do_click(el);
+        if(rec.text != el.textContent) {
+            console.log("not clicking! element textContent does not match: "+rec.text+" != "+el.textContent);
+            PlotticoTrack.pt_retry_action++;
+            if(PlotticoTrack.pt_retry_action < 3) return false;
+        } else {
+            PlotticoTrack.do_click(el);
+        }
         // el.dispatchEvent(new Event("click"));
     }
     PlotticoTrack.pt_retry_action = 0;
@@ -891,21 +932,7 @@ PlotticoTrack.playOne = function() {
     return true;
 };
 
-PlotticoTrack.do_click = function (el) {
-    // var allInputs = document.getElementsByTagName("input");
-    // for(var i=0;i<allInputs.length;i++) {
-    //     if(allInputs[i].type == "password")  {
-    //         allInputs[i].focus(); // fix for chome bug with form autofill
-    //         console.log(allInputs[i].value);
-    //     }
-    // }
-    // allInputs[0].focus();
-    // for(var i=0;i<allInputs.length;i++) {
-    //     if(allInputs[i].type == "password")  {
-    //         allInputs[i].focus(); // fix for chome bug with form autofill
-    //         console.log(allInputs[i].value);
-    //     }
-    // }
+PlotticoTrack.do_click = function (el) {    
     var clickEvt = document.createEvent('MouseEvents');
     clickEvt.initEvent(
       'click'     // event type
@@ -916,7 +943,7 @@ PlotticoTrack.do_click = function (el) {
     // $(el).click();
     // console.log("only click, password: "+document.getElementsByTagName("input")[1].value);
     // el.dispatchEvent(new Event("click"));
-}
+};
 
 PlotticoTrack.saveValues = function(trackedInfo) {
     load_list(function(l) {
@@ -987,6 +1014,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         })
     }
     if(request.action == "init") {
+        PlotticoTrack.pt_xorkey = request.xorkey;
         console.log("init by request. url: "+request.url+" recid " + request.recid);
         load_list(function(l) {
             var i;

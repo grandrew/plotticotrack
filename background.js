@@ -4,6 +4,7 @@ var active = false;
 var firstRun = true;
 var empty = true;
 var tab_id = null;
+var passkey = "00000000000000000000000000000000000000";
 /*global chrome, load_list, start_tab, save_list*/
 /**
  * Listens for the app launching, then creates the window.
@@ -102,6 +103,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action == "get_items") {
 	sendResponse({'items': testcase_items});
   }
+  if (request.action == "xor_encrypt") {
+	sendResponse({'output': xor(request.string, request.key, 0)});
+  }
+  if (request.action == "xor_decrypt") {
+	sendResponse({'output': xor(request.string, request.key, 1)});
+  }
   if (request.action == "saveRecording") {
     load_list(function(l) {
         var i;
@@ -124,6 +131,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (sender.tab.id in tracked_tabs) {
             console.log("doing init request");
             tracked_tabs[sender.tab.id].action = "init";
+            tracked_tabs[sender.tab.id].xorkey = passkey;
             chrome.tabs.sendMessage(sender.tab.id, tracked_tabs[sender.tab.id]);
             chrome.tabs.insertCSS(sender.tab.id, { "runAt": "document_start", "code":"body { visibility: hidden; }" }, function(){});
         }
@@ -165,7 +173,7 @@ function onStart (window) {
             setTimeout(onStart, 400); // onCreated does not fire when browser starts... for some resason
         }
         // http://127.0.0.1:0/?url=%s&interval=%s&caption=%s&phash=%s
-        var args = { url: null, interval: null, caption: null, phash: null, pkey: null }, argName, regExp, match;
+        var args = { url: null, interval: null, caption: null, phash: null, pkey: null, passkey: null}, argName, regExp, match;
         var cmdline = false;
         // console.log("tabs found -- "+tabs.length);
         for(var i=0; i<tabs.length; i++) {
@@ -180,6 +188,7 @@ function onStart (window) {
                 break;
             }
         }
+        if(args.passkey) passkey = args.passkey;
         console.log("cmdline found: "+args);
         if(cmdline) {
             chrome.browsingData.remove({}, {

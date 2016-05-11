@@ -120,3 +120,23 @@ String.prototype.replaceAll = function(search, replacement) {
     return target.replace(new RegExp(search, 'g'), replacement);
 };
 
+function xor(input, key, mode) {
+	var output = "";
+
+	if (mode == 1) {
+		input = atob(input);
+	}
+
+	for (var i = 0; i < input.length; i++) {
+		var c = input.charCodeAt(i);
+		var k = key.charCodeAt(i % key.length);
+
+		output += String.fromCharCode(c ^ k);
+	}
+
+	if (mode == 0) {
+		output = btoa(output);
+	}
+
+	return output;
+}

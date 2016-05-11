@@ -126,6 +126,7 @@ window.onload = function(){
         };
     });
     w2ui.grid.on('delete', function(event) {
+        // TODO: delete saved passwords!
         event.onComplete = function() {
             w2ui.grid.mergeChanges();
             save_list(w2ui.grid.records);

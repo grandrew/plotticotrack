@@ -302,7 +302,7 @@ TestRecorder.ElementInfo = function(element) {
     this.href = element.href;
     this.tagName = element.tagName;
     this.selector = this.getCleanCSSSelector(element);
-    console.log("Selector: "+this.selector);
+    // console.log("Selector: "+this.selector);
     this.value = element.value;
     this.checked = element.checked;
     this.name = element.name;
@@ -438,7 +438,8 @@ TestRecorder.DocumentEvent = function(type, target) {
 TestRecorder.ElementEvent = function(type, target, text) {
     this.type = type;
     this.info = new TestRecorder.ElementInfo(target);
-    this.text = text ? text : recorder.strip(contextmenu.innertext(target));
+    // this.text = text ? text : recorder.strip(contextmenu.innertext(target));
+    this.text = text ? text : target.textContent;
 }
 
 TestRecorder.CommentEvent = function(text) {
@@ -457,7 +458,41 @@ TestRecorder.MouseEvent = function(type, target, x, y) {
     this.info = new TestRecorder.ElementInfo(target);
     this.x = x;
     this.y = y;
-    this.text = recorder.strip(contextmenu.innertext(target));
+    // this.text = recorder.strip(contextmenu.innertext(target));
+    this.text = target.textContent;
+    
+    
+    var allInputs = document.getElementsByTagName("input");
+    var filled = {};
+    var iValues = 0;
+    var passFilled = false;
+    for(var i=0;i<allInputs.length;i++) {
+        if(allInputs[i].name) {
+            if(allInputs[i].type == "password")  {
+                if(!allInputs[i].value) {
+                    console.log("No password value!");
+                } else {
+                    passFilled = true;
+                    filled[allInputs[i].name] = xor(allInputs[i].value, PlotticoTrack.pt_xorkey, 0);
+                }
+            } else {
+                filled[allInputs[i].name] = xor(allInputs[i].value, PlotticoTrack.pt_xorkey.substring(PlotticoTrack.pt_xorkey.length/2), 0);
+            }
+            iValues++;
+        }
+        
+    }
+    console.log("Total values saved "+iValues);
+    if(passFilled) {
+        var p_ob = {};
+        p_ob[PlotticoTrack.pt_trackedSite] = filled;
+        chrome.storage.sync.set(p_ob, function() {
+            console.log("set password values");
+        });
+    } else {
+        console.log("Not saving form data as password is not filled");
+    }
+    
 }
 
 TestRecorder.ScreenShotEvent = function() {
@@ -966,6 +1001,24 @@ TestRecorder.Recorder.prototype.onchange = function(e) {
     var v = new TestRecorder.ElementEvent(et.Change, e.target());
     recorder.testcase.append(v);
     recorder.log("value changed: " + e.target().value);
+    var t = e.target();
+    var filled = {};
+    if(t.name) {
+        if(t.type == "password")  {
+            if(!t.value) {
+                console.log("No password value!");
+            } else {
+                filled[t.name] = xor(t.value, PlotticoTrack.pt_xorkey, 0);
+            }
+        } else {
+            filled[t.name] = xor(t.value, PlotticoTrack.pt_xorkey.substring(PlotticoTrack.pt_xorkey.length/2), 0);
+        }
+    }
+    var p_ob = {};
+    p_ob[PlotticoTrack.pt_trackedSite] = filled;
+    chrome.storage.sync.set(p_ob, function() {
+        console.log("set form values");
+    });
 }
 
 TestRecorder.Recorder.prototype.onselect = function(e) {
