@@ -731,12 +731,17 @@ PlotticoTrack.setFilledPassword = function() {
     var getOb = {};
     getOb[PlotticoTrack.pt_trackedSite] = null;
     chrome.storage.sync.get(getOb,function(v){
+        if(!v[PlotticoTrack.pt_trackedSite]) {
+            clearInterval(PlotticoTrack.pt_fillInterval);
+            return;
+        }
+        clearInterval(PlotticoTrack.pt_fillInterval);
         var allInputs = document.getElementsByTagName("input");
         for(var i=0;i<allInputs.length;i++) {
             if(allInputs[i].name) {
                 if(allInputs[i].type == "password")  {
                     if(!allInputs[i].value) {
-                        if(allInputs[i].name in v[PlotticoTrack.pt_trackedSite]) 
+                        if(allInputs[i].name in v[PlotticoTrack.pt_trackedSite])
                             allInputs[i].value = xor(v[PlotticoTrack.pt_trackedSite][allInputs[i].name], PlotticoTrack.pt_xorkey, 1);
                         else
                             console.log("No stored value for password field "+allInputs[i].name);
@@ -746,7 +751,7 @@ PlotticoTrack.setFilledPassword = function() {
                     }
                 } else {
                     if(!allInputs[i].value) {
-                        if(allInputs[i].name in v[PlotticoTrack.pt_trackedSite]) 
+                        if(allInputs[i].name in v[PlotticoTrack.pt_trackedSite])
                             allInputs[i].value = xor(v[PlotticoTrack.pt_trackedSite][allInputs[i].name], PlotticoTrack.pt_xorkey.substring(PlotticoTrack.pt_xorkey.length/2), 1);
                         else
                             console.log("No stored value for field "+allInputs[i].name);
@@ -932,7 +937,7 @@ PlotticoTrack.playOne = function() {
     return true;
 };
 
-PlotticoTrack.do_click = function (el) {    
+PlotticoTrack.do_click = function (el) {
     var clickEvt = document.createEvent('MouseEvents');
     clickEvt.initEvent(
       'click'     // event type
