@@ -138,6 +138,10 @@ function compare_shots(s1, s2, maxDistance) {
     return dist;
 }
 
+function compareNumbers(a, b) {
+  return a - b;
+}
+
 function entropy_match(sel_list, back, full) {
     var tagName = sel_list[0];
     var sel = sel_list[1];
@@ -147,7 +151,6 @@ function entropy_match(sel_list, back, full) {
     var min_diff = 999999;
     var min_diff_i = -1;
     var cdif;
-    var entropy_window = min_diff;
     if(back) {
         tels = Array.prototype.slice.call(tels);
         tels.reverse();
@@ -162,16 +165,16 @@ function entropy_match(sel_list, back, full) {
         }
         diffs.push(cdif);
         if(cdif < min_diff) {
-            entropy_window = min_diff;
             min_diff = cdif;
             min_diff_i = i;
-            if(min_diff == 0) break;
         }
     }
-    //console.log(diffs);
+    diffs.sort(compareNumbers);
+    // console.log(diffs);
+    var entropy_window = diffs[1] - min_diff;
     // console.log(min_diff);
-    if(sel_list[2] && min_diff >= sel_list[2]) return {"node": null, "entropy_window": 0, "min_diff": min_diff};
-    return {"node": tels[min_diff_i], "entropy_window": entropy_window-min_diff, "min_diff": min_diff};
+    if(sel_list[2] && min_diff >= sel_list[2]) return {"node": null, "entropy_window": 0, "min_diff": min_diff, "matches": diffs};
+    return {"node": tels[min_diff_i], "entropy_window": entropy_window, "min_diff": min_diff, "matches": diffs};
 }
 
 function execute_selector(sel_list, back) {

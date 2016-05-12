@@ -507,15 +507,15 @@ PlotticoTrack.checkSend = function() {
     var pt = PlotticoTrack;
     if (pt.pt_XPath.length) {
         // do a fast replay first
-        if (PlotticoTrack.pt_recIndex < PlotticoTrack.pt_recording.length) {
-            if(PlotticoTrack.playOne()) {
-                setTimeout(PlotticoTrack.checkSend, pt.pt_waitInterval);
-            } else {
-                setTimeout(PlotticoTrack.checkSend, 100);
-            }
-            return;
-        }
-        PlotticoTrack.pt_recIndex = 0; // retry from beginning...
+        // if (PlotticoTrack.pt_recIndex < PlotticoTrack.pt_recording.length) {
+        //     if(PlotticoTrack.playOne()) {
+        //         setTimeout(PlotticoTrack.checkSend, pt.pt_waitInterval);
+        //     } else {
+        //         setTimeout(PlotticoTrack.checkSend, 100);
+        //     }
+        //     return;
+        // }
+        // PlotticoTrack.pt_recIndex = 0; // retry from beginning...
         var normalizedData = PlotticoTrack.getTrackedValue();
         if (!normalizedData.length) {
             if (PlotticoTrack.bdataSent) {
