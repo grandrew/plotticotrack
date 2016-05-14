@@ -238,7 +238,8 @@ PlotticoTrack.parseUnitsRUS = function(str) {
 PlotticoTrack.sendToPlot = function(data, hash) {
     var caption = PlotticoTrack.pt_captionHint;
     if(PlotticoTrack.pt_dataCaption) caption = PlotticoTrack.pt_dataCaption;
-    var pushSrc = "https://plotti.co/" + hash + "?d=" + data.join(",") + caption.trim() + "&h=" + Math.random();
+    if(caption) data.push(caption.trim());
+    var pushSrc = "https://plotti.co/" + hash + "?d=" + data.join(",") + "&h=" + Math.random();
     if(PlotticoTrack.pt_pkey) pushSrc += "&k="+PlotticoTrack.pt_pkey;
     var doneSrc = "http://localhost:8080/notifyDone?phash=" + hash + "&h=" + Math.random();
     PlotticoTrack.xhttp(pushSrc, function(){
