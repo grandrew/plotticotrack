@@ -751,9 +751,9 @@ PlotticoTrack.setFilledPassword = function() {
     chrome.storage.sync.get(getOb,function(v){
         if(!v[PlotticoTrack.pt_trackedSite]) {
             clearInterval(PlotticoTrack.pt_fillInterval);
+            console.log("Can not get stored passwords for "+PlotticoTrack.pt_trackedSite);
             return;
         }
-        clearInterval(PlotticoTrack.pt_fillInterval);
         var allInputs = document.getElementsByTagName("input");
         for(var i=0;i<allInputs.length;i++) {
             if(allInputs[i].name) {
