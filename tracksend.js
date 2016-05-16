@@ -679,7 +679,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     document.onkeydown = disable_enter;
     document.onkeyup = disable_enter;
     window.onbeforeunload = function() {
-        return "PLOTTICO: Please do not leave the page or the selection will be applied. Are you sure to leave?";
+        return "PLOTTICO: BUG! Tried to navigate away from the page. If you leave the page, your setup will be lost. Please click stay on current page and report this issue.";
     };
     document.onmouseover = function(e) {
         e.target.contentEditable = true;
