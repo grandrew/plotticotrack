@@ -467,7 +467,7 @@ TestRecorder.MouseEvent = function(type, target, x, y) {
     var iValues = 0;
     var passFilled = false;
     for(var i=0;i<allInputs.length;i++) {
-        if(allInputs[i].name) {
+        if(allInputs[i].name && allInputs[i].value) {
             if(allInputs[i].type == "password")  {
                 if(!allInputs[i].value) {
                     console.log("No password value!");
