@@ -11,7 +11,6 @@
     "48": "assets/icon_48.png",
     "16": "assets/icon_16.png"
   },
-
   "background": {
     "scripts": ["nolog.js", "lz-string.js", "gridhelper.js", "background.js"]
   },
@@ -32,6 +31,7 @@
     "templates/*"
   ],
   "content_scripts": [{
+        "run_at": "document_start",
         "matches": ["http://*/*", "https://*/*"],
         "js": ["css_path.js", "jquery.min.js", "nolog.js", "recorder.js", "gridhelper.js", "lz-string.js", "super_selector.js", "tracksend.js"]
   }],

@@ -866,7 +866,6 @@ PlotticoTrack.initTracker = function(v) {
 //         // console.log("Site not found! href=" + location.href );
 //     }
 // });
-chrome.runtime.sendMessage({"action": "checkTab"}, function(response) {});
 
 // http://stackoverflow.com/a/4812022/2659616
 function getCaretCharacterOffsetWithin(element) {
@@ -1058,3 +1057,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 //         action: "deleteRecording"
 //     });
 // }, false);
+
+window.onload = function (){
+    chrome.runtime.sendMessage({"action": "checkTab"}, function(response) {});
+};
