@@ -18,7 +18,7 @@
 /*global chrome,load_list,Image,UTILS,XPathEvaluator,XPathResult*/
 /*global recorder*/ // defined at recorder.js and included above
 /*global get_super_selector, execute_selector, b64_encode_safe, b64_decode_safe, xor*/
-/*global atob, btoa*/
+/*global atob, btoa, Element, CustomEvent*/
 // we are loading page after we have set everything up...
 var PlotticoTrack;
 if (typeof(PlotticoTrack) == "undefined") {
@@ -32,6 +32,7 @@ if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack.unsupported_sites = ["chrome.google.com"];
     PlotticoTrack.pt_docListenersCleaned = false;
     PlotticoTrack.pt_xorkey = "00000000000000000000000000000000000000";
+    PlotticoTrack.pt_listeners = [];
 }
 
 function get_vals(objects) {
@@ -42,6 +43,46 @@ function get_vals(objects) {
     return r;
 }
 
+function removeAllListeners() {
+    var removeListenerCode = `
+       for(var i=0;i<window.pt_listeners.length;i++) {
+           window.pt_listeners[i].target.removeEventListener(window.pt_listeners[i].type, window.pt_listeners[i].listener, window.pt_listeners[i].useCapture);
+       }
+    `;
+    document.documentElement.setAttribute('onreset', removeListenerCode);
+    document.documentElement.dispatchEvent(new CustomEvent('reset'));
+    document.documentElement.removeAttribute('onreset');
+}
+
+var listenCode = `
+window.pt_listeners = [];
+var origAddEventListener = Element.prototype.addEventListener;
+console.log("patching listener");
+function patchedAddEventListener(type, listener, useCapture) {
+    window.pt_listeners.push({
+        "target": this,
+        "type": type,
+        "listener": listener,
+        "useCapture": useCapture
+    });
+    console.log("called addEL");
+    origAddEventListener.apply(this, arguments);
+}
+
+window.constructor.prototype.addEventListener = document.constructor.prototype.addEventListener = Element.prototype.addEventListener = patchedAddEventListener;
+`;
+
+// var script = document.createElement('script');
+// script.textContent = listenCode;
+// (document.head||document.documentElement).appendChild(script);
+// script.parentNode.removeChild(script);
+
+var actualCode = '// Some code example \n' + 
+                 'console.log(document.documentElement.outerHTML);';
+
+document.documentElement.setAttribute('onreset', listenCode);
+document.documentElement.dispatchEvent(new CustomEvent('reset'));
+document.documentElement.removeAttribute('onreset');
 
 PlotticoTrack.createXPathFromElement = function(elm) {
     var allNodes = document.getElementsByTagName('*');
@@ -646,6 +687,7 @@ PlotticoTrack.selectElement = function (num, bt_id) {
     }
     if(!PlotticoTrack.pt_docListenersCleaned) {
         recreateNode(document.body, true);
+        removeAllListeners();
         PlotticoTrack.pt_docListenersCleaned = true;
         setup_panel_buttons();
     }
