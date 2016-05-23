@@ -130,13 +130,13 @@ function get_super_selector(el) {
 function get_dom_shot(el) {
     var p_el = el;
     var old_p = el;
-    var all_shots = [p_el.outerHTML.replaceAll(' contenteditable="true">','>').replaceAll(' contenteditable="false">','>')];
+    var all_shots = [p_el.outerHTML.replaceAll(' contenteditable="true"','').replaceAll(' contenteditable="false"','')];
     while(JSON.stringify(all_shots).length < 500) {
         old_p = p_el;
         p_el = p_el.parentNode;
         if(!p_el) break;
         
-        all_shots.push(p_el.outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true">','>').replaceAll(' contenteditable="false">','>'));
+        all_shots.push(p_el.outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true"','').replaceAll(' contenteditable="false"',''));
     }
     if(JSON.stringify(all_shots).length > 2000) {
         all_shots.pop();
