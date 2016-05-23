@@ -152,6 +152,10 @@ PlotticoTrack.chromeCopySelector = function (el) {
 var SUPER_ID = ">";
 
 PlotticoTrack.getCombinedSuperSelector = function(el) {
+    if(document.getElementById("pt_blueline").contains(el) || 
+        document.getElementById("pt_redline").contains(el) ||
+        document.getElementById("pt_yellowline").contains(el))
+        return null;
     var ssel = get_super_selector(el);
     if(execute_selector(ssel) === el && execute_selector(ssel, true) === el) {
         return SUPER_ID+b64_encode_safe(JSON.stringify(ssel));

@@ -183,6 +183,8 @@ function clean_node_inline(node) {
 }
 
 function clean_tree(node) {
+    // console.log("Element:");
+    // console.log(node);
     clean_node_inline(node);
     var innerNodes = node.getElementsByTagName("*");
     for(var i=0;i<innerNodes.length;i++) {
@@ -191,19 +193,61 @@ function clean_tree(node) {
     return node;
 }
 
+function get_comparable_perspective_slow(node) {
+    return clean_tree(node.cloneNode(true)).outerHTML;
+}
 
+function describe_node(node) {
+    if(!node.attributes) {
+        if(node.data) return node.data;
+        return node.nodeName;
+    }
+    var nodeAttrs = [].slice.call(node.attributes);
+    var attrs = JSON.parse(attr_template);
+    var i;
+    var desc = node.tagName;
+    for(i=0; i<nodeAttrs.length;i++) {
+        if(nodeAttrs[i].name in attrs) {
+            attrs[nodeAttrs[i].name] = nodeAttrs[i].value;
+        }
+    }
+    for(var oName in attrs) {
+        if(attrs[oName]) {
+            desc += attrs[oName];
+        }
+    }
+    // or
+    // return JSON.stringify(attrs)
+    return desc;
+}
+
+function walkTheDOM(node, func, resultObj) {
+    //func(node);
+    resultObj.serialized += describe_node(node);
+    node = node.firstChild;
+    while (node) {
+        walkTheDOM(node, func, resultObj);
+        node = node.nextSibling;
+    }
+}
+
+function get_comparable_perspective(node) {
+    var res = {"serialized": ""};
+    walkTheDOM(node, null, res);
+    return res.serialized;
+}
 
 function get_dom_shot(el, deep) {
+    //console.log("dom_shor");
     var p_el = el;
-    var old_p = el;
-    var all_shots = [clean_tree(p_el).outerHTML.replaceAll(' contenteditable="true"','').replaceAll(' contenteditable="false"','')];
-    var depth = 0;
-    while((deep && depth < deep) || (!deep || JSON.stringify(all_shots).length < 500)) {
-        old_p = p_el;
+    var all_shots = [get_comparable_perspective(p_el)];
+    var depth = 1;
+    while((deep && depth < deep) || (!deep && JSON.stringify(all_shots).length < 500)) {
+        // console.log("shot "+depth);
         p_el = p_el.parentNode;
         if(!p_el) break;
         
-        all_shots.push(clean_tree(p_el).outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true"','').replaceAll(' contenteditable="false"',''));
+        all_shots.push(get_comparable_perspective(p_el).replace(all_shots[depth-1], ""));
         depth++;
     }
     if(!deep && JSON.stringify(all_shots).length > 2000) {
