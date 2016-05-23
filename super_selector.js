@@ -221,39 +221,61 @@ function describe_node(node) {
     return desc;
 }
 
-function walkTheDOM(node, func, resultObj) {
-    //func(node);
-    resultObj.serialized += describe_node(node);
-    node = node.firstChild;
-    while (node) {
-        walkTheDOM(node, func, resultObj);
-        node = node.nextSibling;
+// function walkTheDOM(node, func, resultObj) {
+//     resultObj.serialized += describe_node(node);
+//     node = node.firstChild;
+//     while (node) {
+//         walkTheDOM(node, func, resultObj);
+//         node = node.nextSibling;
+//     }
+// }
+
+function get_comparable_perspective(enode, gcp_info, maxNodes) {
+    var serialized = describe_node(enode);
+    var nodes = [].slice.call(enode.childNodes);
+    
+    var nodesTested = 0;
+
+    while(nodes.length) {
+        var node = nodes.shift();
+        serialized += describe_node(node);
+        if(serialized.length > 2000) break;
+
+        if (node.childNodes.length) {
+            nodes = [].slice.call(node.childNodes).concat(nodes);
+        }
+        nodesTested++;
+        if(maxNodes && maxNodes > nodesTested) break;
     }
+    gcp_info.nodesTested = nodesTested;
+    return serialized;
 }
 
-function get_comparable_perspective(node) {
-    var res = {"serialized": ""};
-    walkTheDOM(node, null, res);
-    return res.serialized;
-}
-
-function get_dom_shot(el, deep) {
+function get_dom_shot(el, deep, maxNodes) {
     //console.log("dom_shor");
     var p_el = el;
-    var all_shots = [get_comparable_perspective(p_el)];
+    var gcp_info = {};
+    var all_shots = [get_comparable_perspective(p_el, gcp_info, maxNodes)];
     var depth = 1;
+    var cp = "";
+    var totl = 0;
+    var max_nodes = 0;
     while((deep && depth < deep) || (!deep && JSON.stringify(all_shots).length < 500)) {
         // console.log("shot "+depth);
         p_el = p_el.parentNode;
         if(!p_el) break;
+        cp = get_comparable_perspective(p_el, gcp_info, maxNodes);
+        if(gcp_info.nodesTested > max_nodes) max_nodes = gcp_info.nodesTested;
+        totl += cp.length;
+        all_shots.push(cp.replace(all_shots[depth-1], ""));
+        if(totl > 2000) break;
         
-        all_shots.push(get_comparable_perspective(p_el).replace(all_shots[depth-1], ""));
         depth++;
     }
     if(!deep && JSON.stringify(all_shots).length > 2000) {
         all_shots.pop();
     }
-    return [el.tagName, all_shots]; 
+    return [el.tagName, all_shots, max_nodes]; 
 }
 
 function compare_shots(s1, s2, maxDistance) {
@@ -287,7 +309,7 @@ function entropy_match(sel_list, back, full) {
     }
     full = true; // TODO: sift4 unstable in maxDistance, need to investigate
     for(var i=0; i<tels.length; i++) {
-        dshot = get_dom_shot(tels[i], deep);
+        dshot = get_dom_shot(tels[i], deep, sel_list[2]);
         if(full) {
             cdif = compare_shots(sel, dshot[1], 0);
         } else {
@@ -303,7 +325,7 @@ function entropy_match(sel_list, back, full) {
     // console.log(diffs);
     var entropy_window = diffs[1] - min_diff;
     // console.log(min_diff);
-    if(sel_list[2] && min_diff >= sel_list[2]) return {"node": null, "entropy_window": 0, "min_diff": min_diff, "matches": diffs, "closest_match": tels[min_diff_i]};
+    if(sel_list[3] && min_diff >= sel_list[3]) return {"node": null, "entropy_window": 0, "min_diff": min_diff, "matches": diffs, "closest_match": tels[min_diff_i]};
     return {"node": tels[min_diff_i], "entropy_window": entropy_window, "min_diff": min_diff, "matches": diffs};
 }
 
