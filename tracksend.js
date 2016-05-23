@@ -150,6 +150,7 @@ PlotticoTrack.chromeCopySelector = function (el) {
 };
 
 var SUPER_ID = ">";
+var SUPER_ID_2 = ">2";
 
 PlotticoTrack.getCombinedSuperSelector = function(el) {
     if(document.getElementById("pt_blueline").contains(el) || 
@@ -158,15 +159,19 @@ PlotticoTrack.getCombinedSuperSelector = function(el) {
         return null;
     var ssel = get_super_selector(el);
     if(execute_selector(ssel) === el && execute_selector(ssel, true) === el) {
-        return SUPER_ID+b64_encode_safe(JSON.stringify(ssel));
+        return SUPER_ID_2+b64_encode_safe(JSON.stringify(ssel));
     }
     return PlotticoTrack.chromeCopySelector(el);
 };
 
 PlotticoTrack.chooseSelector = function(sel) {
-    if(sel[0] == SUPER_ID) {
-        return execute_selector(JSON.parse(b64_decode_safe(sel.substring(1))));
+    if(sel.startsWith(SUPER_ID_2)) {
+        return execute_selector(JSON.parse(b64_decode_safe(sel.substring(2))));
+    } else if(sel[0] == SUPER_ID) {
+        console.log("Using old entropy selector");
+        return execute_selector_old(JSON.parse(b64_decode_safe(sel.substring(1))));
     }
+    console.log("Using default CSS selector");
     return PlotticoTrack.fuzzifiedSelector(sel);
 };
 
