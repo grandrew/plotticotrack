@@ -245,7 +245,7 @@ function get_comparable_perspective(enode, gcp_info, maxNodes) {
             nodes = [].slice.call(node.childNodes).concat(nodes);
         }
         nodesTested++;
-        if(maxNodes && maxNodes > nodesTested) break;
+        if(maxNodes && nodesTested > maxNodes) break;
     }
     gcp_info.nodesTested = nodesTested;
     return serialized;
