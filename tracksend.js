@@ -65,7 +65,6 @@ function patchedAddEventListener(type, listener, useCapture) {
         "listener": listener,
         "useCapture": useCapture
     });
-    console.log("called addEL");
     origAddEventListener.apply(this, arguments);
 }
 
