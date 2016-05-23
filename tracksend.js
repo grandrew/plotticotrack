@@ -743,6 +743,9 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             console.log("click happened!");
             e.preventDefault();
             e.stopPropagation();
+            document.getElementById("plotticotrack_message").style.visibility = "hidden";
+            document.getElementById("plotticotrack_selector_working").style.visibility = "visible";
+            setTimeout(function(){
             var data = PlotticoTrack.saveSelector(e, num);
             PlotticoTrack.clickWaiting = -1;
             document.onmouseover = old_mov;
@@ -756,8 +759,9 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             // document.getElementById(bt_id).disabled = true;
             var but = document.getElementById(bt_id);
             but.className += but.className ? ' pt_button_done' : 'pt_button_done';
-            document.getElementById("plotticotrack_message").style.visibility = "hidden";
             document.getElementById(bt_id).innerHTML = data;
+            document.getElementById("plotticotrack_selector_working").style.visibility = "hidden";
+            }, 100);
             return false;
         };
     setTimeout(function () {
