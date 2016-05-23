@@ -29,7 +29,7 @@ if (typeof(PlotticoTrack) == "undefined") {
     PlotticoTrack.my_hash = Math.random();
     PlotticoTrack.clickWaiting = -1;
     // PlotticoTrack.unsupported_sites = ["yahoo.com"];
-    PlotticoTrack.unsupported_sites = [];
+    PlotticoTrack.unsupported_sites = ["chrome.google.com"];
     PlotticoTrack.pt_docListenersCleaned = false;
     PlotticoTrack.pt_xorkey = "00000000000000000000000000000000000000";
 }
