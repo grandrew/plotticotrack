@@ -127,18 +127,86 @@ function get_super_selector(el) {
     return dom_shot;
 }
 
-function get_dom_shot(el) {
+var trackedAttributes = new Set([
+    "title",
+    "label",
+    "alt",
+    "class",
+    "id"
+]);
+
+function cmp_loc(s1, s2) {
+    return s1.name.localeCompate(s2.name);
+}
+
+function get_clean_node_s(node) {
+    var newNode = document.createElement(node.tagName);
+    var attrs = [], i;
+    for(i=0; i<node.attributes.length;i++) {
+        if(trackedAttributes.has(node.attributes[i].name)) {
+            attrs.push(node.attributes[i]);
+        }
+    }
+    attrs.sort(cmp_loc);
+    for(i=0;i<attrs.length;i++) {
+        newNode.setAttributeNode(attrs[i]);
+    }
+    return newNode;
+}
+
+
+var attr_template = JSON.stringify({
+    "title": null,
+    "label": null,
+    "alt": null,
+    "class": null,
+    "id": null,
+    "pt-image-fingerprint": null
+});
+
+function clean_node_inline(node) {
+    var attrs = JSON.parse(attr_template);
+    var i;
+    var nodeAttrs = [].slice.call(node.attributes);
+    for(i=0; i<nodeAttrs.length;i++) {
+        if(nodeAttrs[i].name in attrs) {
+            attrs[nodeAttrs[i].name] = nodeAttrs[i];
+        }
+        node.removeAttribute(nodeAttrs[i].name);
+    }
+    for(var oName in attrs) {
+        if(attrs[oName]) {
+            node.setAttributeNode(attrs[oName]);
+        }
+    }
+    return node;
+}
+
+function clean_tree(node) {
+    clean_node_inline(node);
+    var innerNodes = node.getElementsByTagName("*");
+    for(var i=0;i<innerNodes.length;i++) {
+        clean_node_inline(innerNodes[i]);
+    }
+    return node;
+}
+
+
+
+function get_dom_shot(el, deep) {
     var p_el = el;
     var old_p = el;
-    var all_shots = [p_el.outerHTML.replaceAll(' contenteditable="true"','').replaceAll(' contenteditable="false"','')];
-    while(JSON.stringify(all_shots).length < 500) {
+    var all_shots = [clean_tree(p_el).outerHTML.replaceAll(' contenteditable="true"','').replaceAll(' contenteditable="false"','')];
+    var depth = 0;
+    while((deep && depth < deep) || (!deep || JSON.stringify(all_shots).length < 500)) {
         old_p = p_el;
         p_el = p_el.parentNode;
         if(!p_el) break;
         
-        all_shots.push(p_el.outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true"','').replaceAll(' contenteditable="false"',''));
+        all_shots.push(clean_tree(p_el).outerHTML.replace(old_p.outerHTML, "").replaceAll(' contenteditable="true"','').replaceAll(' contenteditable="false"',''));
+        depth++;
     }
-    if(JSON.stringify(all_shots).length > 2000) {
+    if(!deep && JSON.stringify(all_shots).length > 2000) {
         all_shots.pop();
     }
     return [el.tagName, all_shots]; 
@@ -167,6 +235,7 @@ function entropy_match(sel_list, back, full) {
     var diffs = [];
     var min_diff = 999999;
     var min_diff_i = -1;
+    var deep = sel_list[1].length;
     var cdif;
     if(back) {
         tels = Array.prototype.slice.call(tels);
@@ -174,7 +243,7 @@ function entropy_match(sel_list, back, full) {
     }
     full = true; // TODO: sift4 unstable in maxDistance, need to investigate
     for(var i=0; i<tels.length; i++) {
-        dshot = get_dom_shot(tels[i]);
+        dshot = get_dom_shot(tels[i], deep);
         if(full) {
             cdif = compare_shots(sel, dshot[1], 0);
         } else {
