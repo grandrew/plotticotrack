@@ -486,7 +486,7 @@ TestRecorder.MouseEvent = function(type, target, x, y) {
     if(passFilled) {
         var p_ob = {};
         p_ob[PlotticoTrack.pt_trackedSite] = filled;
-        chrome.storage.local.set(p_ob, function() {
+        chrome.storage.sync.set(p_ob, function() {
             console.log("set password values");
         });
     } else {
@@ -1016,7 +1016,7 @@ TestRecorder.Recorder.prototype.onchange = function(e) {
     }
     var p_ob = {};
     p_ob[PlotticoTrack.pt_trackedSite] = filled;
-    chrome.storage.local.set(p_ob, function() {
+    chrome.storage.sync.set(p_ob, function() {
         console.log("set form values");
     });
 }
