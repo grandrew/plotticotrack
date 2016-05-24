@@ -157,7 +157,7 @@ PlotticoTrack.getCombinedSuperSelector = function(el) {
         document.getElementById("pt_yellowline").contains(el))
         return null;
     var ssel = get_super_selector(el);
-    if(execute_selector(ssel) === el && execute_selector(ssel, true) === el) {
+    if(execute_selector(ssel) === el) {
         return SUPER_ID_2+b64_encode_safe(JSON.stringify(ssel));
     }
     return PlotticoTrack.chromeCopySelector(el);
