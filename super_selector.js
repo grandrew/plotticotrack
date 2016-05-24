@@ -142,10 +142,6 @@ var attr_template = JSON.stringify({
     "pt-image-fingerprint": null
 });
 
-function get_comparable_perspective_slow(node) {
-    return clean_tree(node.cloneNode(true)).outerHTML;
-}
-
 function describe_node(node) {
     if(!node.attributes) {
         if(node.data) return node.data.replace(/\d/g, "");

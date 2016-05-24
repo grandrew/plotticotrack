@@ -48,6 +48,8 @@ function removeAllListeners() {
        for(var i=0;i<window.pt_listeners.length;i++) {
            window.pt_listeners[i].target.removeEventListener(window.pt_listeners[i].type, window.pt_listeners[i].listener, window.pt_listeners[i].useCapture);
        }
+       console.log("deregistering all listeners...");
+       window.pt_stopListen = true;
     `;
     document.documentElement.setAttribute('onreset', removeListenerCode);
     document.documentElement.dispatchEvent(new CustomEvent('reset'));
@@ -55,10 +57,15 @@ function removeAllListeners() {
 }
 
 var listenCode = `
-window.pt_listeners = [];
+if(!window.pt_listeners) window.pt_listeners = [];
+window.pt_stopListen = false;
 var origAddEventListener = Element.prototype.addEventListener;
 console.log("patching listener");
 function patchedAddEventListener(type, listener, useCapture) {
+    if(window.pt_stopListen) {
+        console.log("Stopping listener "+type);
+        return;
+    }
     window.pt_listeners.push({
         "target": this,
         "type": type,

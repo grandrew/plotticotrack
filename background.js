@@ -91,6 +91,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
           request.obj.type = EventTypes.Click;
       }
     if(request.obj.type != EventTypes.Click) return;
+    for(var i=0; i<testcase_items.length;i++) {
+        if(testcase_items[i].info.selector == request.obj.info.selector) return;
+    }
     testcase_items[testcase_items.length] = request.obj;
     empty = false;
     sendResponse({});
