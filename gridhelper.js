@@ -78,10 +78,11 @@ function object2list(ob) {
     return l;
 }
 
-function save_list(l) {
+function save_list(l, cb) {
     var ob = list2object(l);
     chrome.storage.sync.set(ob, function() {
         //console.log("set values");
+        if(cb) cb();
     });
 }
 
