@@ -124,6 +124,12 @@ function get_super_selector(el) {
     var dom_shot = get_dom_shot(el);
     var element_info = entropy_match(dom_shot, false, true);
     dom_shot.push(element_info.entropy_window);
+    if(element_info.entropy_window == 0) {
+        dom_shot = get_dom_shot(el, dom_shot[1].length+1);
+        element_info = entropy_match(dom_shot, false, true);
+        dom_shot.push(element_info.entropy_window);
+        if(element_info.entropy_window == 0) return null; // not enough entropy
+    }
     return dom_shot;
 }
 
