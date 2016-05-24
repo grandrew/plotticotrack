@@ -802,7 +802,7 @@ function getSelectionParentElement() {
 PlotticoTrack.setFilledPassword = function() {
     var getOb = {};
     getOb[PlotticoTrack.pt_trackedSite] = null;
-    chrome.storage.sync.get(getOb,function(v){
+    chrome.storage.local.get(getOb,function(v){
         if(!v[PlotticoTrack.pt_trackedSite]) {
             clearInterval(PlotticoTrack.pt_fillInterval);
             console.log("Can not get stored passwords for "+PlotticoTrack.pt_trackedSite);
@@ -1076,7 +1076,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             PlotticoTrack.pt_recStarted = false;
         }
         console.log("Loading recording for play");
-        chrome.storage.sync.get({
+        chrome.storage.local.get({
             "recording": null
         }, function(v) {
             if (!v.recording) {
