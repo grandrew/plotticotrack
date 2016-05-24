@@ -65,7 +65,6 @@ function patchedAddEventListener(type, listener, useCapture) {
         "listener": listener,
         "useCapture": useCapture
     });
-    console.log("called addEL");
     origAddEventListener.apply(this, arguments);
 }
 
@@ -150,19 +149,29 @@ PlotticoTrack.chromeCopySelector = function (el) {
 };
 
 var SUPER_ID = ">";
+var SUPER_ID_2 = ">2";
 
 PlotticoTrack.getCombinedSuperSelector = function(el) {
+    if(document.getElementById("pt_blueline").contains(el) || 
+        document.getElementById("pt_redline").contains(el) ||
+        document.getElementById("pt_yellowline").contains(el))
+        return null;
     var ssel = get_super_selector(el);
-    if(execute_selector(ssel) === el && execute_selector(ssel, true) === el) {
-        return SUPER_ID+b64_encode_safe(JSON.stringify(ssel));
+    if(ssel && execute_selector(ssel) === el) {
+        return SUPER_ID_2+b64_encode_safe(JSON.stringify(ssel));
     }
+    console.log("warning! could not apply entropy selector, falling back to CSS");
     return PlotticoTrack.chromeCopySelector(el);
 };
 
 PlotticoTrack.chooseSelector = function(sel) {
-    if(sel[0] == SUPER_ID) {
-        return execute_selector(JSON.parse(b64_decode_safe(sel.substring(1))));
+    if(sel.startsWith(SUPER_ID_2)) {
+        return execute_selector(JSON.parse(b64_decode_safe(sel.substring(2))));
+    } else if(sel[0] == SUPER_ID) {
+        console.log("Using old entropy selector");
+        return execute_selector_old(JSON.parse(b64_decode_safe(sel.substring(1))));
     }
+    console.log("Using default CSS selector");
     return PlotticoTrack.fuzzifiedSelector(sel);
 };
 
@@ -739,6 +748,9 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             console.log("click happened!");
             e.preventDefault();
             e.stopPropagation();
+            document.getElementById("plotticotrack_message").style.visibility = "hidden";
+            document.getElementById("plotticotrack_selector_working").style.visibility = "visible";
+            setTimeout(function(){
             var data = PlotticoTrack.saveSelector(e, num);
             PlotticoTrack.clickWaiting = -1;
             document.onmouseover = old_mov;
@@ -752,8 +764,9 @@ PlotticoTrack.selectElement = function (num, bt_id) {
             // document.getElementById(bt_id).disabled = true;
             var but = document.getElementById(bt_id);
             but.className += but.className ? ' pt_button_done' : 'pt_button_done';
-            document.getElementById("plotticotrack_message").style.visibility = "hidden";
             document.getElementById(bt_id).innerHTML = data;
+            document.getElementById("plotticotrack_selector_working").style.visibility = "hidden";
+            }, 100);
             return false;
         };
     setTimeout(function () {
@@ -790,7 +803,7 @@ function getSelectionParentElement() {
 PlotticoTrack.setFilledPassword = function() {
     var getOb = {};
     getOb[PlotticoTrack.pt_trackedSite] = null;
-    chrome.storage.sync.get(getOb,function(v){
+    chrome.storage.local.get(getOb,function(v){
         if(!v[PlotticoTrack.pt_trackedSite]) {
             clearInterval(PlotticoTrack.pt_fillInterval);
             console.log("Can not get stored passwords for "+PlotticoTrack.pt_trackedSite);
@@ -1064,7 +1077,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             PlotticoTrack.pt_recStarted = false;
         }
         console.log("Loading recording for play");
-        chrome.storage.sync.get({
+        chrome.storage.local.get({
             "recording": null
         }, function(v) {
             if (!v.recording) {

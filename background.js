@@ -86,6 +86,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 //       });
 //   }
   if (request.action == "append") {
+      if(request.obj.type == EventTypes.MouseDown) {
+          // this probably means that we are just doing a click... fix that!
+          request.obj.type = EventTypes.Click;
+      }
     if(request.obj.type != EventTypes.Click) return;
     testcase_items[testcase_items.length] = request.obj;
     empty = false;
@@ -133,7 +137,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             if(l[i].recid == request.recid) {
                 var v = l[i];
                 v.script = testcase_items;
-                save_list(l);
+                save_list(l, function() {
+                    // after recording save, clean and restart, as we do not have any other saves
+                    active = false;
+                      empty = true;
+                      testcase_items = new Array();
+                });
                 return;
             }
         }

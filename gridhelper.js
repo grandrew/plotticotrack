@@ -78,20 +78,21 @@ function object2list(ob) {
     return l;
 }
 
-function save_list(l) {
+function save_list(l, cb) {
     var ob = list2object(l);
-    chrome.storage.sync.set(ob, function() {
+    chrome.storage.local.set(ob, function() {
         //console.log("set values");
+        if(cb) cb();
     });
 }
 
 function load_list(cb) {
-    chrome.storage.sync.get({"total": 0},function(v){
+    chrome.storage.local.get({"total": 0},function(v){
         var getob={};
         for(var i=0;i<v.total;i++) {
             getob[i] = {};
         }
-        chrome.storage.sync.get(getob, function(v){
+        chrome.storage.local.get(getob, function(v){
             cb(object2list(v));
         });
     });
