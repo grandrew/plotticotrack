@@ -142,7 +142,7 @@ function get_comparable_perspective_slow(node) {
 
 function describe_node(node) {
     if(!node.attributes) {
-        if(node.data) return node.data;
+        if(node.data) return node.data.replace(/\d/g, "");
         return node.nodeName;
     }
     var nodeAttrs = [].slice.call(node.attributes);
@@ -161,7 +161,7 @@ function describe_node(node) {
     }
     // or
     // return JSON.stringify(attrs)
-    return desc;
+    return desc.replace(/\d/g, "");
 }
 
 function get_comparable_perspective(enode, gcp_info, maxNodes) {
@@ -194,10 +194,12 @@ function get_dom_shot(el, deep, maxNodes) {
     var cp = "";
     var totl = 0;
     var max_nodes = 0;
+    var tagNames = [el.tagName];
     while((deep && depth < deep) || (!deep && JSON.stringify(all_shots).length < 500)) {
         // console.log("shot "+depth);
         p_el = p_el.parentNode;
         if(!p_el) break;
+        tagNames.push(p_el.tagName);
         cp = get_comparable_perspective(p_el, gcp_info, maxNodes);
         if(gcp_info.nodesTested > max_nodes) max_nodes = gcp_info.nodesTested;
         totl += cp.length;
@@ -209,7 +211,8 @@ function get_dom_shot(el, deep, maxNodes) {
     if(!deep && JSON.stringify(all_shots).length > 2000) {
         all_shots.pop();
     }
-    return [el.tagName, all_shots, max_nodes]; 
+    tagNames.reverse();
+    return [tagNames.join(" > "), all_shots, max_nodes]; 
 }
 
 function compare_shots(s1, s2, maxDistance) {
@@ -218,7 +221,8 @@ function compare_shots(s1, s2, maxDistance) {
     else maxlen = s2.length;
     var dist = 0;
     for(var i=0;i<maxlen;i++){
-        dist += diffAlg(""+s1[i], ""+s2[i], maxDistance)/(i+1);
+        // dist += diffAlg(""+s1[i], ""+s2[i], maxDistance)/(i+1);
+        dist += diffAlg(""+s1[i], ""+s2[i], maxDistance);
     }
     return dist;
 }
@@ -228,9 +232,9 @@ function compareNumbers(a, b) {
 }
 
 function entropy_match(sel_list, back, full) {
-    var tagName = sel_list[0];
+    var tagSelector = sel_list[0];
     var sel = sel_list[1];
-    var tels = document.getElementsByTagName(tagName);
+    var tels = document.querySelectorAll(tagSelector);
     var dshot;
     var diffs = [];
     var min_diff = 999999;
@@ -259,7 +263,15 @@ function entropy_match(sel_list, back, full) {
     // console.log(diffs);
     var entropy_window = diffs[1] - min_diff;
     // console.log(min_diff);
-    if(sel_list[3] && min_diff >= sel_list[3]) return {"node": null, "entropy_window": 0, "min_diff": min_diff, "matches": diffs, "closest_match": tels[min_diff_i]};
+    if(sel_list[3] && min_diff >= sel_list[3]) {
+        var l_tagSelector = tagSelector.split(" > ");
+        if(l_tagSelector.length > 1) {
+            var sel_mod = sel_list.slice();
+            sel_mod[0] = l_tagSelector[l_tagSelector.length-1];
+            return entropy_match(sel_mod);
+        }
+        return {"node": null, "entropy_window": 0, "min_diff": min_diff, "matches": diffs, "closest_match": tels[min_diff_i]};
+    }
     return {"node": tels[min_diff_i], "entropy_window": entropy_window, "min_diff": min_diff, "matches": diffs};
 }
 
