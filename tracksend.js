@@ -508,6 +508,13 @@ PlotticoTrack.processLoginForm = function() {
     return null;
 };
 
+function reposition_panel_bug20574() {
+    var panels = document.getElementsByClassName("plotticotrack_panel");
+    for(var i=0;i<panels.length;i++) {
+        panels[i].style.top=(-50+document.body.scrollTop)+"px";
+    }
+}
+
 PlotticoTrack.insertPanel = function() {
     
     // continuing add-toolbar.js
@@ -536,6 +543,8 @@ PlotticoTrack.insertPanel = function() {
         xmlHttp.addEventListener("load", function() {
             var inject  = document.createElement("div");
             inject.id = "plotticotrack_main_panel";
+            inject.style.zIndex=99999999;
+            setInterval(reposition_panel_bug20574, 300);
             inject.innerHTML = xmlHttp.responseText;
             document.body.appendChild(inject);
             document.body.style.overflow = "visible";

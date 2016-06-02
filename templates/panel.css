@@ -607,7 +607,7 @@ div.project-info:after {
     width: 100%;
     height: 50px;
     padding-left: 30px;
-    z-index: 999999999;
+    z-index: 9999999999;
     vertical-align: baseline;
     font-size: 13px;
 }

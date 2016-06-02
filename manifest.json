@@ -3,7 +3,7 @@
   "name": "Plotti.co Tracker Pro",
   "short_name": "Plottico-pro",
   "description": "",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "minimum_chrome_version": "38",
 
   "icons": {
