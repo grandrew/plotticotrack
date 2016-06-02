@@ -157,6 +157,7 @@ PlotticoTrack.chromeCopySelector = function (el) {
 
 var SUPER_ID = ">";
 var SUPER_ID_2 = ">2";
+var SUPER_ID_3 = ">3";
 
 PlotticoTrack.getCombinedSuperSelector = function(el) {
     if(document.getElementById("pt_blueline").contains(el) || 
@@ -165,18 +166,27 @@ PlotticoTrack.getCombinedSuperSelector = function(el) {
         return null;
     var ssel = get_super_selector(el);
     if(ssel && execute_selector(ssel) === el) {
-        return SUPER_ID_2+b64_encode_safe(JSON.stringify(ssel));
+        return SUPER_ID_3+b64_encode_safe(JSON.stringify(ssel));
     }
     console.log("warning! could not apply entropy selector, falling back to CSS");
     return PlotticoTrack.chromeCopySelector(el);
 };
 
 PlotticoTrack.chooseSelector = function(sel) {
-    if(sel.startsWith(SUPER_ID_2)) {
+    if(!sel) return null;
+    if(sel.startsWith(SUPER_ID_3)) {
+        describe_node = describe_node_3;
+        return execute_selector(JSON.parse(b64_decode_safe(sel.substring(2))));
+    } else if(sel.startsWith(SUPER_ID_2)) {
+        describe_node = describe_node_2;
         return execute_selector(JSON.parse(b64_decode_safe(sel.substring(2))));
     } else if(sel[0] == SUPER_ID) {
         console.log("Using old entropy selector");
-        return execute_selector_old(JSON.parse(b64_decode_safe(sel.substring(1))));
+        var ss = JSON.parse(b64_decode_safe(sel.substring(1)));
+        if(ss.length == 4)
+            return execute_selector(ss);
+        else
+            return execute_selector_old(ss);
     }
     console.log("Using default CSS selector");
     return PlotticoTrack.fuzzifiedSelector(sel);

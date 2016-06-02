@@ -120,6 +120,8 @@ function diffAlg(s1, s2, maxDistance) {
     //return levDist(s1, s2);
 }
 
+nrReg = /[-+]?[0-9\s\u00a0,]*[\.]?[0-9]+/g;
+
 function get_super_selector(el) {
     var dom_shot = get_dom_shot(el);
     var element_info = entropy_match(dom_shot, false, true);
@@ -142,7 +144,31 @@ var attr_template = JSON.stringify({
     "pt-image-fingerprint": null
 });
 
-function describe_node(node) {
+function describe_node_3(node) {
+    if(!node.attributes) {
+        if(node.data) return node.data.replace(nrReg, "#").replace(/\d/g, "");
+        return node.nodeName;
+    }
+    var nodeAttrs = [].slice.call(node.attributes);
+    var attrs = JSON.parse(attr_template);
+    var i;
+    var desc = node.tagName;
+    for(i=0; i<nodeAttrs.length;i++) {
+        if(nodeAttrs[i].name in attrs) {
+            attrs[nodeAttrs[i].name] = nodeAttrs[i].value;
+        }
+    }
+    for(var oName in attrs) {
+        if(attrs[oName]) {
+            desc += attrs[oName];
+        }
+    }
+    // or
+    // return JSON.stringify(attrs)
+    return desc.replace(nrReg, "#").replace(/\d/g, "");
+}
+
+function describe_node_2(node) {
     if(!node.attributes) {
         if(node.data) return node.data.replace(/\d/g, "");
         return node.nodeName;
@@ -165,6 +191,8 @@ function describe_node(node) {
     // return JSON.stringify(attrs)
     return desc.replace(/\d/g, "");
 }
+
+var describe_node = describe_node_3;
 
 function get_comparable_perspective(enode, gcp_info, maxNodes) {
     var serialized = describe_node(enode);
