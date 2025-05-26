@@ -11,31 +11,50 @@
     "48": "assets/icon_48.png",
     "16": "assets/icon_16.png"
   },
+
   "background": {
-    "scripts": ["nolog.js", "lz-string.js", "gridhelper.js", "background.js"]
+    "scripts": ["csp_bypass.js", "nolog.js", "lz-string.js", "gridhelper.js", "background.js"]
   },
+
   "browser_action": {
     "default_icon": "assets/icon_128.png",
     "default_popup": "control.html",
     "default_title": "PlotticoTrack chrome plugin"
   },
- "permissions": [
-     "tabs",
-     "background",
-     "storage",
-     "browsingData",
-     "http://*/*",
-     "https://*/*"
+
+  "permissions": [
+    "tabs",
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "browsingData",
+    "http://*/*",
+    "https://*/*"
   ],
+
   "web_accessible_resources": [
     "templates/*"
   ],
+
   "content_scripts": [{
-        "run_at": "document_start",
-        "matches": ["http://*/*", "https://*/*"],
-        "js": ["css_path.js", "jquery.min.js", "nolog.js", "recorder.js", "gridhelper.js", "lz-string.js", "super_selector.js", "tracksend.js"]
+    "run_at": "document_start",
+    "matches": ["http://*/*", "https://*/*"],
+    "js": [
+      "remove_meta_csp.js",
+      "css_path.js",
+      "jquery.min.js",
+      "nolog.js",
+      "recorder.js",
+      "gridhelper.js",
+      "lz-string.js",
+      "super_selector.js",
+      "tracksend.js"
+    ]
   }],
+
   "offline_enabled": true,
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+
+  "content_security_policy": "script-src 'self' 'unsafe-eval' 'unsafe-inline'; object-src 'self'",
+
   "debug": true
 }

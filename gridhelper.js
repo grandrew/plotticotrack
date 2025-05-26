@@ -98,7 +98,7 @@ function load_list(cb) {
     });
 }
 
-function start_tab(url, recid, cb) {
+function start_tab(url, recid, elname, cb) {
     chrome.tabs.create({
         url: url,
         active: false,
@@ -106,7 +106,7 @@ function start_tab(url, recid, cb) {
     }, function (tab) {
         // notify bg that we launched a tab with url
         console.log("Will now track tab "+tab.id);
-        var m = {"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid };
+        var m = {"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid, "phash": elname };
         chrome.runtime.sendMessage(m, function(response) {});
         if(typeof(tracked_tabs) != "undefined") {
             tracked_tabs[tab.id] = m;
@@ -115,7 +115,8 @@ function start_tab(url, recid, cb) {
                 "action": "init",
                 "url": url,
                 "tabId": tab.id,
-                "recid": recid
+                "recid": recid,
+                "phash": elname
             });
         }
         chrome.tabs.insertCSS(tab.id, { "runAt": "document_start", "code":"body { visibility: hidden; }" }, function(){});
@@ -123,6 +124,32 @@ function start_tab(url, recid, cb) {
         if(typeof(cb) != "undefined") cb();
     } );
 }
+
+// function start_tab(url, recid, cb) {
+//     chrome.tabs.query({
+//         currentWindow: true,
+//         active: true,
+//     }, function (tab) {
+//         // notify bg that we launched a tab with url
+//         console.log("Will now track tab "+tab.id);
+//         var m = {"action": "setTrackedTab", "url": url, "tabId": tab.id, "recid": recid };
+//         chrome.runtime.sendMessage(m, function(response) {});
+//         if(typeof(tracked_tabs) != "undefined") {
+//             tracked_tabs[tab.id] = m;
+//         } else {
+//             chrome.tabs.sendMessage(tab.id, {
+//                 "action": "init",
+//                 "url": url,
+//                 "tabId": tab.id,
+//                 "recid": recid
+//             });
+//         }
+//         chrome.tabs.insertCSS(tab.id, { "runAt": "document_start", "code":"body { visibility: hidden; }" }, function(){});
+//         chrome.tabs.update(tab.id, {active: true});
+//         if(typeof(cb) != "undefined") cb();
+//     } );
+// }
+
 
 
 function b64_encode_safe(str) {

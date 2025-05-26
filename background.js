@@ -149,6 +149,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 return;
             }
         }
+
+        fetch('http://127.0.0.1:'+mainPort+"/general_store", {
+            body: l, method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        });
     });
   }
     if (request.action == "setTrackedTab") {
@@ -258,7 +263,7 @@ function onStart (window) {
                         left = true;
                     }
                 }
-                start_tab(l[0].url, l[0].recid);
+                // start_tab(l[0].url, l[0].recid);
                 // 2. close all the tabs that were open and are not tracked
             });
         } else {
@@ -273,6 +278,48 @@ function onStart (window) {
                                 start_tab(l[i].url, l[i].recid);
                             }
                         }
+                        // now, if port to send is available, send the data
+
+                        chrome.tabs.query({}, function (tabs) {
+                            console.log("Found tabs:", tabs);
+                            const args = { port: null };
+
+                            // Loop through all tabs
+                            for (let tab of tabs) {
+                                if (!tab.url) continue;
+
+                                console.log("Checking tab URL:", tab.url);
+
+                                // Try to extract the argument from each tab's URL
+                                for (let argName in args) {
+                                    const regExp = new RegExp(argName + "=([^&]+)");
+                                    const match = regExp.exec(tab.url);
+                                    if (match) {
+                                        args[argName] = match[1];
+                                        console.log(`Found ${argName}: ${match[1]}`);
+                                        break;  // Stop after first successful match
+                                    }
+                                }
+
+                                // Exit early if we have what we need
+                                if (args.port) break;
+                            }
+
+                            if (!args.port) {
+                                console.log("Port argument not found in any tab URLs.");
+                                return;
+                            }
+
+                            console.log("Final args:", JSON.stringify(args));
+                            mainPort = args.port;
+
+                            fetch('http://127.0.0.1:'+mainPort+"/general_store", {
+                                body: l, method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                            });
+
+                        });
+
                     });
                 }
             });

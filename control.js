@@ -35,11 +35,14 @@ window.onload = function(){
             },
             toolbar: {
                 items: [
+                    { type: 'button', id: 'dup', caption: 'Duplicate', img: 'icon-page', disabled: true},
                     { type: 'break' },
                     { type: 'button', id: 'gourl', caption: 'Visit site url and start', img: 'icon-search', disabled: true},
                     { type: 'break' },
-                    { type: 'button', id: 'goplot', caption: 'View plot', img: 'icon-page', disabled: true},
-                    { type: 'html', html: '<div style="width: 240px;text-align: right;"><a href="https://plotti.co" target="_blank">plotti.co</a> site tracker <u>pro</u></div>'},
+                    { type: 'button', id: 'export_textarea', caption: 'Export to clipboard', img: '', disabled: false},
+                    // { type: 'break' },
+                    // { type: 'button', id: 'goplot', caption: 'View plot', img: 'icon-page', disabled: true},
+                    // { type: 'html', html: '<div style="width: 240px;text-align: right;"><a href="https://plotti.co" target="_blank">plotti.co</a> site tracker <u>pro</u></div>'},
                 ],
                 onClick: function (target, data) {
                     if(target == "gourl") {
@@ -48,8 +51,9 @@ window.onload = function(){
                             //console.log("will open" + w2ui.grid.get(sel[i]).url);
                             var url = w2ui.grid.get(sel[i]).url;
                             var recid = w2ui.grid.get(sel[i]).recid;
+                            var elname = w2ui.grid.get(sel[i]).phash;
                             // var win = window.open(url, '_blank');
-                            start_tab(url, recid, function() {
+                            start_tab(url, recid, elname, function() {
                                 window.close();
                             });
                         }
@@ -68,14 +72,44 @@ window.onload = function(){
                         }
                         // win.focus();
                     }
+                    if(target == "dup") {
+                        var sel = w2ui.grid.getSelection();
+                        for(var i=0;i<sel.length;i++) {
+                            //console.log("will open" + w2ui.grid.get(sel[i]).url);
+                            var url = w2ui.grid.get(sel[i]).url;
+                            var recid = w2ui.grid.get(sel[i]).recid;
+                            var elname = w2ui.grid.get(sel[i]).phash;
+                            // var win = window.open(url, '_blank');
+                            var nrid = 1;
+                            if(w2ui.grid.records.length) nrid = w2ui.grid.records[w2ui.grid.records.length-1].recid+1;
+                            w2ui['grid'].add({ recid: nrid, autostart: false, phash: makeid(), url: url, timer: 60*5, caption: '', selector: "", nrindex: -1, script: "", pkey: "" });
+                            w2ui.grid.editField(nrid, 2);
+                                            }
+                        // win.focus();
+                    }
+                    if(target == "export_textarea") {
+                        // get entire grid
+                        var grid_content = w2ui.grid.records;
+                        var str = JSON.stringify(grid_content);
+                        // put to clipboard
+                        navigator.clipboard.writeText(str).then(function() {
+                            console.log('Async: Copying to clipboard was successful!');
+                        }, function(err) {
+                            console.error('Async: Could not copy text: ', err);
+                        });
+                        // var textarea = document.createElement('textarea');
+                        // textarea.value = str;
+                        // document.body.appendChild(textarea);
+                        // textarea.select();
+                    }
                 }
             },
             columns: [
                 { field: 'autostart', caption: 'Auto', size: '6%', editable: { type : 'checkbox' } },
-                { field: 'phash', caption: 'Plotti.co Hash', size: '15%', editable: { type : 'text', inTag : '', style   : '' }},
+                { field: 'phash', caption: 'Element Name', size: '15%', editable: { type : 'text', inTag : '', style   : '' }},
                 { field: 'url', caption: 'Track URL', size: '50%', editable: { type : 'text', inTag : '', style   : '' } },
-                { field: 'timer', caption: 'Timer (s)', size: '10%', editable: { type : 'int', inTag : '', style   : '' } },
-                { field: 'caption', caption: 'Data caption', size: '120px', editable: { type : 'text', inTag : '', style   : '' } },
+                { field: 'timer', caption: 'Timer (s)', size: '10%', hidden: true, editable: { type : 'int', inTag : '', style   : '' } },
+                { field: 'caption', caption: 'Description', size: '120px', editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'pkey', caption: 'Feed Key', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } },
                 { field: 'selector', caption: 'Selector', size: '30%', hidden: true, editable: { type : 'text', inTag : '', style   : '' }},
                 { field: 'nrindex', caption: 'NRIndex', size: '10%', hidden: true, editable: { type : 'text', inTag : '', style   : '' } },
@@ -119,11 +153,13 @@ window.onload = function(){
     
     w2ui.grid.on('select', function(event) {
         w2ui['grid'].toolbar.enable('gourl');
+        w2ui['grid'].toolbar.enable('dup');
         w2ui['grid'].toolbar.enable('goplot');
     });
     
     w2ui.grid.on('unselect', function(event) {
         w2ui['grid'].toolbar.disable('gourl');
+        w2ui['grid'].toolbar.disable('dup');
         w2ui['grid'].toolbar.disable('goplot');
     });
     w2ui.grid.on('change', function(event) {

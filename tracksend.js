@@ -272,6 +272,17 @@ PlotticoTrack.parseTrackableIndex = function(string) {
 
 PlotticoTrack.parseUnits = function (str) {
     // TODO: support scientific notations
+    // check if there are any numbers in str:
+    if(!str) {
+        console.log("No numbers found in: " + str);
+        return -9999;
+    }
+    var reg = /[-+]?[0-9]*\.?[0-9]+/g;
+    var matches = str.match(reg);
+    if(!matches) {
+        console.log("No numbers found in: " + str);
+        return str;
+    }
     var str = str.trim();
     var lstr = str.split(",");
     if(lstr.length > 1) {
@@ -368,7 +379,10 @@ PlotticoTrack.getTargetContent = function(el) {
     if(el.nodeName == "INPUT") {
         return el.value;
     }
-    return el.textContent;
+    if(el.textContent) {    
+        return el.textContent;
+    }
+    return "0";
 }
 
 PlotticoTrack.getTrackedValue = function() {
@@ -693,7 +707,8 @@ PlotticoTrack.saveSelector = function (e, num) {
     var trackedInfo = {
         "url": PlotticoTrack.pt_trackedSite, //document.location.href,
         "nindex": PlotticoTrack.pt_NumberIndex.join(";"),
-        "xpath": PlotticoTrack.pt_XPath.join(";")
+        "xpath": PlotticoTrack.pt_XPath.join(";"),
+        "phash": PlotticoTrack.phash,
     };
     PlotticoTrack.saveValues(trackedInfo);
     return PlotticoTrack.parseUnits(dataList[nrIndex]);
@@ -871,6 +886,7 @@ PlotticoTrack.initTracker = function(v) {
     PlotticoTrack.pt_trackedSite = v["url"];
     PlotticoTrack.pt_recId = v.recid;
     PlotticoTrack.pt_Hash = v["phash"];
+    PlotticoTrack.phash = v["phash"];
     if(v.nrindex && typeof(v.nrindex) == "string") PlotticoTrack.pt_NumberIndex = v["nrindex"].split(";");
     else PlotticoTrack.pt_NumberIndex = [];
     if(v["selector"]) PlotticoTrack.pt_XPath = v["selector"].split(";");
@@ -1056,7 +1072,7 @@ PlotticoTrack.saveValues = function(trackedInfo) {
                 console.log("Warning! list "+i+" is "+l[i]);
                 continue;
             }
-            if(l[i].url == trackedInfo.url) {
+            if(l[i].url == trackedInfo.url && l[i].phash == trackedInfo.phash) {
                 var v = l[i];
                 v.nrindex = trackedInfo.nindex;
                 v.selector = trackedInfo.xpath;
@@ -1118,6 +1134,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
     if(request.action == "init") {
         PlotticoTrack.pt_xorkey = request.xorkey;
+        PlotticoTrack.phash = request.phash;
         console.log("init by request. url: "+request.url+" recid " + request.recid);
         load_list(function(l) {
             var i;
